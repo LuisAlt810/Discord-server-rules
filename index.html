@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Server Rules</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #161a22;
+      --accent: #5865f2;
+      --text: #e6e6eb;
+      --muted: #9aa0aa;
+      --danger: #ff5c5c;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #0f1115, #0b0d12);
+      color: var(--text);
+      padding: 40px 16px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 2.4rem;
+      background: linear-gradient(90deg, var(--accent), #8ea1ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .rules-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 15px 40px rgba(0,0,0,.35);
+      transition: transform .3s ease, box-shadow .3s ease;
+    }
+
+    .rules-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 25px 60px rgba(0,0,0,.45);
+    }
+
+    .rules-title {
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--accent);
+    }
+
+    ul {
+      padding-left: 0;
+      list-style: none;
+      margin: 0;
+    }
+
+    li {
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      line-height: 1.4;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all .4s ease;
+    }
+
+    li.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    li span {
+      color: var(--muted);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>📜 Server Rules</h1>
+
+    <div class="rules-card">
+      <div class="rules-title">📜 Channel Rules</div>
+      <ul>
+        <li>🤝 <b>Be Respectful</b> — Kindness comes first.</li>
+        <li>🔇 <b>No Spamming</b> — Keep it clean and readable.</li>
+        <li>📌 <b>Stay On Topic</b> — Post in the correct channel.</li>
+        <li>🚫 <b>No NSFW</b> — This is a safe space.</li>
+        <li>📢 <b>No Advertising</b> — DM ads = ban.</li>
+        <li>🗣️ <b>English Only</b> — Unless channel says otherwise.</li>
+        <li>🔔 <b>Don’t Ping Excessively</b> — Use pings wisely.</li>
+        <li>🛑 <b>No Mini-Modding</b> — Let staff do their job.</li>
+        <li>📜 <b>Follow Discord TOS</b> — <a href="https://discord.com/guidelines" target="_blank">discord.com/guidelines</a></li>
+        <li>💬 <b>Spoilers & Threads</b> — Use properly when needed.</li>
+      </ul>
+    </div>
+
+    <div class="rules-card">
+      <div class="rules-title">🎧 Voice Chat Rules</div>
+      <ul>
+        <li>🎙️ <b>Use Push-to-Talk</b> — No background noise.</li>
+        <li>🔊 <b>No Ear Rape</b> — Be mindful of volume.</li>
+        <li>🗯️ <b>Respect Others</b> — No yelling or interrupting.</li>
+        <li>🎵 <b>Music Only in Music VC</b> — No random songs.</li>
+        <li>😠 <b>No Harassment</b> — Kindness always.</li>
+        <li>🎥 <b>No Recording</b> — Unless approved.</li>
+        <li>🧑‍🎤 <b>Appropriate Avatars</b> — Keep it clean.</li>
+        <li>💤 <b>No AFK in Active VCs</b> — Don’t take up space.</li>
+        <li>🎤 <b>One at a Time</b> — Don’t talk over others.</li>
+        <li>👮‍♂️ <b>Obey Staff</b> — If asked to leave, please do.</li>
+      </ul>
+    </div>
+
+    <div class="rules-card">
+      <div class="rules-title">🌟 Extra Server Rules</div>
+      <ul>
+        <li>❤️ <b>Be Kind</b> — Golden rule always.</li>
+        <li>🎁 <b>Giveaways Are for Actives</b> — No farming.</li>
+        <li>👑 <b>Respect Staff Decisions</b> — No backtalk.</li>
+        <li>🎭 <b>No Impersonation</b> — Be yourself.</li>
+        <li>📰 <b>No Fake News</b> — Keep it real.</li>
+        <li>😂 <b>Memes in Meme Channel</b> — No spam elsewhere.</li>
+        <li>⚠️ <b>Use Spoiler Tags</b> — Don’t ruin surprises.</li>
+        <li>🎈 <b>No Nitro Begging</b> — It’s annoying.</li>
+        <li>🔒 <b>Protect Privacy</b> — Yours and others’.</li>
+        <li>😄 <b>Fun Allowed</b> — Just don’t take it too far.</li>
+      </ul>
+    </div>
+
+    <footer>
+      © 2026 • Server Rules • Stay cool 😎
+    </footer>
+  </div>
+
+  <script>
+    // Smooth reveal animation
+    const items = document.querySelectorAll("li");
+    items.forEach((item, i) => {
+      setTimeout(() => item.classList.add("show"), i * 60);
+    });
+  </script>
+
+</body>
+</html>
