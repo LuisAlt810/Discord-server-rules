@@ -1,588 +1,497 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="utf-8" />
-  <title>Server Rules</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Server Rules — Update v3</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root{
-      --bg: #0f1115;
-      --card: #16161b;
-      --accent: #5865f2;
-      --accent-2: #7cc0ff;
-      --text: #e6e6eb;
+      --bg: #0b0e12;
+      --card: rgba(255,255,255,0.03);
+      --accent-a: #5865f2;
+      --accent-b: #7cc0ff;
+      --accent-c: #9b7bff;
+      --text: #e7e9ee;
       --muted: #9aa0aa;
-      --glass: rgba(255,255,255,0.04);
-      --danger: #ff6b6b;
+      --glass: rgba(255,255,255,0.02);
       --radius: 14px;
-      --shadow: 0 15px 40px rgba(0,0,0,.45);
     }
-
-    /* Reset / base */
     *{box-sizing:border-box;font-family:"Segoe UI",system-ui,-apple-system,SegoeUIEmoji,Helvetica,Arial;}
-    html,body{height:100%}
-    body{
-      margin:0;
-      background:
-        radial-gradient(1200px 600px at 10% 20%, rgba(88,101,242,0.06), transparent 8%),
-        radial-gradient(1000px 500px at 90% 80%, rgba(124,192,255,0.03), transparent 9%),
-        linear-gradient(180deg, #0d0f13 0%, #07080a 100%);
-      color:var(--text);
-      padding:36px 18px;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
+    html,body{height:100%;margin:0;background:
+      radial-gradient(600px 300px at 10% 10%, rgba(88,101,242,0.06), transparent 8%),
+      linear-gradient(180deg,#08090b 0%, #0b0e12 100%);
+      color:var(--text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
     }
 
-    .container{
-      max-width:980px;
-      margin: 0 auto;
-      position:relative;
-      z-index:1;
-    }
+    /* ORBS */
+    .orb{ position:fixed;border-radius:999px;filter:blur(36px) saturate(120%);opacity:.12;pointer-events:none;mix-blend-mode:screen;z-index:0}
+    .o1{ width:520px;height:210px;left:-80px;top:-60px;background:linear-gradient(90deg,var(--accent-a),var(--accent-b)); animation:floatA 10s ease-in-out infinite; }
+    .o2{ width:340px;height:140px;right:-60px;bottom:-20px;background:linear-gradient(90deg,#ff7eb3,#a18cff); animation:floatB 12s ease-in-out infinite;}
+    @keyframes floatA{0%{transform:translateY(0)}50%{transform:translateY(-18px)}100%{transform:translateY(0)}}
+    @keyframes floatB{0%{transform:translateY(0)}50%{transform:translateY(-12px)}100%{transform:translateY(0)}}
 
-    /* animated header */
-    .headline{
-      text-align:center;
-      margin-bottom:26px;
-    }
-    h1{
-      font-size:2.7rem;
-      margin:0;
-      line-height:1;
-      background: linear-gradient(90deg, var(--accent), #8ea1ff 60%, var(--accent-2));
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      display:inline-block;
-      position:relative;
-    }
-    /* subtle sparkle on the title */
-    @keyframes title-glow{
-      0%{filter:brightness(1)}
-      50%{filter:brightness(1.12) saturate(1.05)}
-      100%{filter:brightness(1)}
-    }
-    h1{animation:title-glow 3.5s ease-in-out infinite;}
+    .container{max-width:980px;margin:36px auto;position:relative;z-index:2;padding:0 18px;}
 
-    .subtitle{
-      color:var(--muted);
-      margin-top:10px;
-      font-size:0.95rem;
-      display:block;
-      opacity:.95;
-    }
+    /* Header */
+    .headline{text-align:center;margin-bottom:20px}
+    h1{font-size:2.4rem;margin:0;background:linear-gradient(90deg,var(--accent-a),var(--accent-b),var(--accent-c));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;animation:glow 3s ease-in-out infinite}
+    .subtitle{color:var(--muted);margin-top:8px;display:block}
 
-    /* rules card */
-    .rules-card{
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border-radius:var(--radius);
-      padding:20px;
-      margin-bottom:22px;
-      box-shadow:var(--shadow);
-      border:1px solid rgba(255,255,255,0.02);
-      transition:transform .28s ease, box-shadow .28s ease;
-      overflow:hidden;
-    }
-    .rules-card:hover{ transform:translateY(-6px); box-shadow:0 30px 80px rgba(0,0,0,.6); }
+    @keyframes glow{0%{filter:brightness(1)}50%{filter:brightness(1.12)}100%{filter:brightness(1)}}
 
-    .rules-title{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      margin-bottom:12px;
-      color:var(--accent);
-      font-weight:600;
-      font-size:1.1rem;
+    /* Loader - full screen */
+    #loaderWrap{
+      position:fixed;inset:0;display:grid;place-items:center;background:linear-gradient(180deg, rgba(3,4,6,0.94), rgba(3,4,6,0.88));z-index:9999;backdrop-filter: blur(6px);
+      transition:opacity .45s ease, visibility .45s ease; will-change:opacity;
     }
+    .loaderCard{width:min(820px,94%);padding:20px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 30px 80px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,0.02);}
 
-    ul{ padding-left:0; margin:0; list-style:none; }
+    .loader-top{display:flex;gap:14px;align-items:center}
+    .logoRing{width:76px;height:76px;border-radius:999px;display:grid;place-items:center;background:linear-gradient(90deg,#0000, rgba(255,255,255,0.02));position:relative}
+    /* radial spinner (SVG centered) */
+    .ringSVG{width:68px;height:68px;display:block}
 
-    /* rule item styling */
-    li.rule{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-      padding:12px 14px;
-      margin-bottom:10px;
-      background:var(--glass);
-      border-radius:10px;
-      line-height:1.35;
-      opacity:0;
-      transform:translateY(12px) scale(.995);
-      transition:all .45s cubic-bezier(.2,.95,.2,1);
-      border:1px solid rgba(255,255,255,0.02);
-    }
-    li.rule.show{
-      opacity:1;
-      transform:none;
-    }
+    .loader-text{flex:1}
+    .loader-text h2{margin:0;font-size:1.05rem}
+    .loader-text p{margin:6px 0 0;color:var(--muted);font-size:.95rem}
 
-    .emoji{
-      font-size:1.25rem;
-      width:36px;
-      height:36px;
-      display:inline-grid;
-      place-items:center;
-      flex-shrink:0;
-      transform-origin:center;
-      transition:transform .35s ease;
-    }
-    li.rule:hover .emoji{ transform:rotate(-8deg) translateY(-2px); }
+    /* neon progress bar */
+    .progressOuter{margin-top:16px;background:rgba(255,255,255,0.03);height:14px;border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.02)}
+    .progressInner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent-a),var(--accent-b),var(--accent-c));box-shadow:0 8px 30px rgba(88,101,242,0.14);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;letter-spacing:.6px;transition:width .22s linear}
 
-    .rule-body{ flex:1; min-width:0; }
-    .rule-title{ font-weight:700; display:flex; align-items:center; gap:10px; color:var(--text); }
-    .rule-desc{ font-size:0.93rem; color:var(--muted); margin-top:4px; }
+    .loader-meta{display:flex;justify-content:space-between;margin-top:10px;color:var(--muted);font-size:.88rem}
+    .loader-actions{display:flex;gap:10px;margin-top:14px;justify-content:center}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text);cursor:pointer;font-weight:700;min-width:96px}
+    .btn.primary{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));box-shadow:0 10px 30px rgba(88,101,242,0.14);border:none}
+    .btn[disabled]{opacity:.5;cursor:not-allowed;transform:none}
 
-    /* tiny severity pill */
-    .pill{
-      margin-left:auto;
-      font-size:0.74rem;
-      padding:4px 8px;
-      border-radius:999px;
-      background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border:1px solid rgba(255,255,255,0.02);
-      color:var(--muted);
-    }
+    /* main content cards */
+    .rules-card{background:var(--card);border-radius:12px;padding:18px;margin-bottom:18px;box-shadow:0 14px 40px rgba(0,0,0,.45);border:1px solid rgba(255,255,255,0.02)}
+    .rules-title{color:var(--accent-a);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+    ul{padding:0;margin:0;list-style:none}
+    .rule{display:flex;gap:12px;padding:10px;border-radius:10px;background:rgba(255,255,255,0.015);margin-bottom:8px;opacity:0;transform:translateY(10px);transition:all .45s cubic-bezier(.2,.95,.2,1);}
+    .rule.show{opacity:1;transform:none}
+    .emoji{width:36px;height:36px;display:grid;place-items:center;font-size:1.2rem}
+    .rule-title{font-weight:700}
+    .rule-desc{color:var(--muted);font-size:.94rem;margin-top:4px}
 
-    a{ color:var(--accent); text-decoration:none; }
+    footer{color:var(--muted);text-align:center;margin-top:18px}
 
-    footer{
-      text-align:center;
-      margin-top:28px;
-      color:var(--muted);
-      font-size:0.92rem;
-    }
+    /* confetti canvas */
+    #confettiCanvas{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:12000;opacity:0;transition:opacity .35s ease}
 
-    /* Loading overlay */
-    .loader-wrap{
-      position:fixed;
-      inset:0;
-      display:grid;
-      place-items:center;
-      background:linear-gradient(180deg, rgba(6,8,10,0.92), rgba(6,8,10,0.86));
-      z-index:999;
-      transition:opacity .5s ease, visibility .5s ease;
-    }
-    .loader{
-      width:min(760px,92%);
-      max-width:820px;
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border-radius:16px;
-      padding:22px;
-      box-shadow:0 20px 60px rgba(0,0,0,.6);
-      border:1px solid rgba(255,255,255,0.03);
-      text-align:center;
-    }
-    .loader h2{
-      margin:0 0 8px 0;
-      color:var(--text);
-      font-size:1.1rem;
-    }
-    .loader p{ margin:0; color:var(--muted); font-size:0.95rem; }
+    /* small toast */
+    .toast{position:fixed;right:18px;bottom:18px;background:rgba(0,0,0,0.6);color:#fff;padding:10px 12px;border-radius:10px;font-weight:700;transform:translateY(8px);opacity:0;transition:all .28s ease;z-index:13000}
+    .toast.show{opacity:1;transform:none}
 
-    .progress-bar{
-      margin-top:18px;
-      height:14px;
-      background:rgba(255,255,255,0.03);
-      border-radius:10px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,0.02);
-    }
-    .progress-fill{
-      height:100%;
-      width:0%;
-      background:linear-gradient(90deg, var(--accent), var(--accent-2));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#fff;
-      font-weight:700;
-      font-size:0.86rem;
-      letter-spacing:.5px;
-      transition:width .25s linear;
-    }
-
-    .loader-meta{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      margin-top:12px;
-      color:var(--muted);
-      font-size:0.88rem;
-      align-items:center;
-    }
-
-    /* Agree bar */
-    .agree-row{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      margin-top:8px;
-      justify-content:center;
-    }
-    .btn{
-      background:transparent;
-      color:var(--text);
-      border:1px solid rgba(255,255,255,0.06);
-      padding:10px 14px;
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:700;
-      transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
-    }
-    .btn:active{ transform:translateY(1px); }
-    .btn.primary{
-      background:linear-gradient(90deg,var(--accent),var(--accent-2));
-      border:none;
-      box-shadow:0 8px 30px rgba(88,101,242,0.14);
-    }
-    .btn.ghost{
-      background:transparent;
-    }
-    .btn[disabled]{ opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
-
-    /* copy notice */
-    .copy-toast{
-      position:fixed;
-      right:18px;
-      bottom:18px;
-      background:rgba(0,0,0,0.6);
-      color:#fff;
-      padding:10px 12px;
-      border-radius:10px;
-      font-size:0.92rem;
-      opacity:0;
-      transform:translateY(8px);
-      transition:all .35s ease;
-      z-index:1200;
-      pointer-events:none;
-    }
-    .copy-toast.show{ opacity:1; transform:none; }
-
-    /* small responsive tweaks */
-    @media (max-width:600px){
-      h1{ font-size:2rem; }
-      .rules-card{ padding:16px; }
-      .emoji{ width:34px; height:34px; }
-    }
-
-    /* subtle floating orbs */
-    .orb{
-      position:fixed;
-      border-radius:999px;
-      filter:blur(30px) saturate(110%);
-      opacity:.12;
-      pointer-events:none;
-      z-index:0;
-      mix-blend-mode:screen;
-      animation:float 8s ease-in-out infinite;
-    }
-    .orb.o1{ width:420px; height:160px; left:-70px; top:-40px; background:linear-gradient(90deg,#5865f2,#7cc0ff); animation-duration:10s; }
-    .orb.o2{ width:300px; height:120px; right:-60px; bottom:-30px; background:linear-gradient(90deg,#ff7eb3,#a18cff); animation-duration:12s; transform:translateZ(0); }
-    @keyframes float{
-      0%{ transform:translateY(0) scale(1) }
-      50%{ transform:translateY(-18px) scale(1.03) }
-      100%{ transform:translateY(0) scale(1) }
-    }
-
-    /* small shimmer effect for rule card header icons */
-    .spark{ display:inline-block; transform-origin:center; animation:pop .95s ease-in-out infinite; opacity:.95; }
-    @keyframes pop{ 0%{transform:scale(.98)}50%{transform:scale(1.02)}100%{transform:scale(.98)} }
+    /* responsive */
+    @media (max-width:640px){ h1{font-size:1.7rem} .logoRing{width:62px;height:62px} .ringSVG{width:58px;height:58px} .loaderCard{padding:14px} }
   </style>
 </head>
 <body>
-
-  <!-- decorative orbs -->
   <div class="orb o1" aria-hidden="true"></div>
   <div class="orb o2" aria-hidden="true"></div>
 
-  <!-- Loading overlay -->
-  <div id="loaderWrap" class="loader-wrap" role="status" aria-live="polite">
-    <div class="loader" id="loader">
-      <h2>Preparing the server rules <span style="opacity:.85">— loading</span></h2>
-      <p>Friendly reminder: these rules keep the space safe and fun for everyone.</p>
+  <!-- Loader overlay -->
+  <div id="loaderWrap" role="status" aria-live="polite" aria-label="Loading rules overlay">
+    <div class="loaderCard" role="dialog" aria-modal="true" aria-label="Loading rules">
+      <div class="loader-top">
+        <div class="logoRing" aria-hidden="true">
+          <!-- subtle SVG circular progress (stroke will be animated via JS) -->
+          <svg class="ringSVG" viewBox="0 0 100 100" aria-hidden="true">
+            <defs>
+              <linearGradient id="g1" x1="0%" x2="100%" y1="0%" y2="0%">
+                <stop offset="0%" stop-color="#5865f2"/>
+                <stop offset="60%" stop-color="#7cc0ff"/>
+                <stop offset="100%" stop-color="#9b7bff"/>
+              </linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r="44" stroke="rgba(255,255,255,0.04)" stroke-width="6" fill="none"/>
+            <circle id="spinner" cx="50" cy="50" r="44" stroke="url(#g1)" stroke-width="6" stroke-linecap="round" fill="none"
+              stroke-dasharray="276.46" stroke-dashoffset="276.46" transform="rotate(-90 50 50)"></circle>
+          </svg>
+        </div>
 
-      <div class="progress-bar" aria-hidden="true" style="margin-top:18px;">
-        <div id="progressFill" class="progress-fill" style="width:0%">0%</div>
+        <div class="loader-text">
+          <h2 id="loaderTitle">Preparing the server rules…</h2>
+          <p id="loaderSubtitle">We make this quick and friendly — hang tight (or press Skip).</p>
+
+          <div class="progressOuter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Loading progress">
+            <div id="progressInner" class="progressInner">0%</div>
+          </div>
+
+          <div class="loader-meta">
+            <div id="stageText">Initializing</div>
+            <div id="etaText">ETA: 1.5s</div>
+          </div>
+        </div>
       </div>
 
-      <div class="loader-meta">
-        <span id="loaderStage">Initializing…</span>
-        <span id="loaderETA">ETA: 1.8s</span>
-      </div>
-
-      <div class="agree-row" style="margin-top:14px;">
-        <button id="skipBtn" class="btn ghost" title="Skip intro">Skip</button>
-        <button id="agreeBtn" class="btn primary" disabled aria-disabled="true">Agree & Continue</button>
+      <div class="loader-actions" style="margin-top:14px">
+        <button id="skipBtn" class="btn" aria-label="Skip loading">Skip</button>
+        <button id="agreeBtn" class="btn primary" disabled aria-disabled="true" aria-label="Agree and continue">Agree & Continue</button>
       </div>
     </div>
   </div>
 
+  <!-- Confetti canvas -->
+  <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+
   <div class="container" id="mainContent" aria-hidden="true" tabindex="-1">
     <div class="headline">
       <h1>📜 Server Rules</h1>
-      <span class="subtitle">Short, clear, and fair — follow them and people will thank you.</span>
+      <span class="subtitle">Clear, fair, and made to keep the community fun.</span>
     </div>
 
     <!-- Channel rules -->
     <div class="rules-card" aria-labelledby="chTitle">
-      <div class="rules-title" id="chTitle">
-        <span class="spark">📜</span>
-        Channel Rules
-        <span class="pill" title="Enforced by staff">Enforced</span>
-      </div>
-
+      <div id="chTitle" class="rules-title">📜 Channel Rules</div>
       <ul id="channelList">
-        <li class="rule"><div class="emoji">🤝</div><div class="rule-body"><div class="rule-title">Be respectful <span style="margin-left:8px;color:var(--muted);font-weight:600;font-size:.86rem">(basic)</span></div><div class="rule-desc">No insults, targeted harassment, or hateful slurs. Disagreements are fine — personal attacks are not.</div></div></li>
-
-        <li class="rule"><div class="emoji">🔇</div><div class="rule-body"><div class="rule-title">No spamming or flooding</div><div class="rule-desc">Repeated messages, giant walls of text, or excessive emoji are not allowed. Keep conversations readable.</div></div></li>
-
-        <li class="rule"><div class="emoji">📌</div><div class="rule-body"><div class="rule-title">Post in the correct channel</div><div class="rule-desc">Memes in #memes, help in #support — follow channel descriptions or staff guidance.</div></div></li>
-
-        <li class="rule"><div class="emoji">🚫</div><div class="rule-body"><div class="rule-title">No NSFW / sexual content</div><div class="rule-desc">This server is safe for a broad audience. Sexual or explicit content will be removed and may result in a ban.</div></div></li>
-
-        <li class="rule"><div class="emoji">📢</div><div class="rule-body"><div class="rule-title">No advertising without permission</div><div class="rule-desc">DM ads, server drops, or unsolicited links are prohibited. Ask staff for promo rules.</div></div></li>
-
-        <li class="rule"><div class="emoji">🗣️</div><div class="rule-body"><div class="rule-title">Language & clarity</div><div class="rule-desc">Use English in main chat unless a channel says otherwise. Be clear — avoid excessive shorthand that confuses others.</div></div></li>
-
-        <li class="rule"><div class="emoji">🔔</div><div class="rule-body"><div class="rule-title">Don't ping excessively</div><div class="rule-desc">Avoid @everyone/@here and repeated pings. Use DMs when appropriate.</div></div></li>
-
-        <li class="rule"><div class="emoji">🛑</div><div class="rule-body"><div class="rule-title">Let staff moderate</div><div class="rule-desc">If you have an issue with a user, report it to staff. Do not take moderation into your own hands.</div></div></li>
-
-        <li class="rule"><div class="emoji">📜</div><div class="rule-body"><div class="rule-title">Follow Discord Terms</div><div class="rule-desc">Illegal activity and TOS violations will be reported to Discord. Read <a href="https://discord.com/guidelines" target="_blank" rel="noopener">Discord Community Guidelines</a>.</div></div></li>
-
-        <li class="rule"><div class="emoji">💬</div><div class="rule-body"><div class="rule-title">Use spoilers & threads appropriately</div><div class="rule-desc">Spoilers must use spoiler tags; keep long side chats to threads to reduce clutter.</div></div></li>
+        <li class="rule"><div class="emoji">🤝</div><div><div class="rule-title">Be Respectful</div><div class="rule-desc">No harassment, hateful language, or targeted attacks. Disagree without being a jerk.</div></div></li>
+        <li class="rule"><div class="emoji">🔇</div><div><div class="rule-title">No Spamming</div><div class="rule-desc">No rapid messages, repeated images, or excessive emoji.</div></div></li>
+        <li class="rule"><div class="emoji">📌</div><div><div class="rule-title">Use the Right Channel</div><div class="rule-desc">Read channel topics; memes go in #memes, help in #support, etc.</div></div></li>
+        <li class="rule"><div class="emoji">🚫</div><div><div class="rule-title">No NSFW</div><div class="rule-desc">Sexual or graphic content is not allowed anywhere here.</div></div></li>
+        <li class="rule"><div class="emoji">📢</div><div><div class="rule-title">No Advertising</div><div class="rule-desc">Unsolicited server drops or DM ads are not permitted — ask staff for rules.</div></div></li>
       </ul>
-
-      <div style="display:flex;gap:10px;margin-top:12px;align-items:center;justify-content:flex-end">
+      <div style="display:flex;justify-content:flex-end;margin-top:10px">
         <button id="copyChannel" class="btn">Copy rules</button>
       </div>
     </div>
 
     <!-- Voice rules -->
     <div class="rules-card" aria-labelledby="vcTitle">
-      <div class="rules-title" id="vcTitle">
-        <span class="spark">🎧</span>
-        Voice Chat Rules
-        <span class="pill">Voice</span>
-      </div>
-
+      <div id="vcTitle" class="rules-title">🎧 Voice Chat Rules</div>
       <ul id="voiceList">
-        <li class="rule"><div class="emoji">🎙️</div><div class="rule-body"><div class="rule-title">Use push-to-talk or mute when not speaking</div><div class="rule-desc">Keep background noise to a minimum; mute when away.</div></div></li>
-
-        <li class="rule"><div class="emoji">🔊</div><div class="rule-body"><div class="rule-title">Respect volume levels</div><div class="rule-desc">No ear-rape audio, sudden loud sounds, or music at high volumes.</div></div></li>
-
-        <li class="rule"><div class="emoji">🗯️</div><div class="rule-body"><div class="rule-title">Don't interrupt</div><div class="rule-desc">Allow others to speak; avoid talking over people or creating a hostile environment.</div></div></li>
-
-        <li class="rule"><div class="emoji">🎵</div><div class="rule-body"><div class="rule-title">Music only in dedicated VC</div><div class="rule-desc">Use the music channel for DJing/streaming; ask before sharing audio in other VCs.</div></div></li>
-
-        <li class="rule"><div class="emoji">🎥</div><div class="rule-body"><div class="rule-title">No recording without consent</div><div class="rule-desc">Always ask — recording without permission is strictly forbidden.</div></div></li>
-
-        <li class="rule"><div class="emoji">👮‍♂️</div><div class="rule-body"><div class="rule-title">Follow staff directions</div><div class="rule-desc">If staff asks you to mute/leave, do so politely — appeals can be made via DM.</div></div></li>
+        <li class="rule"><div class="emoji">🎙️</div><div><div class="rule-title">Push-to-Talk or Mute</div><div class="rule-desc">Keep background noise low and mute when away.</div></div></li>
+        <li class="rule"><div class="emoji">🔊</div><div><div class="rule-title">Respect Volume</div><div class="rule-desc">No ear-rape or sudden loud audio.</div></div></li>
+        <li class="rule"><div class="emoji">🎥</div><div><div class="rule-title">No Recording Without Consent</div><div class="rule-desc">Always ask before recording voice/video.</div></div></li>
       </ul>
     </div>
 
     <!-- Extra rules -->
     <div class="rules-card" aria-labelledby="exTitle">
-      <div class="rules-title" id="exTitle">
-        <span class="spark">🌟</span>
-        Extra Server Rules
-        <span class="pill">General</span>
-      </div>
-
+      <div id="exTitle" class="rules-title">🌟 Extra Rules</div>
       <ul id="extraList">
-        <li class="rule"><div class="emoji">❤️</div><div class="rule-body"><div class="rule-title">Be kind and inclusive</div><div class="rule-desc">Treat others how you'd like to be treated; microaggressions aren't allowed.</div></div></li>
-
-        <li class="rule"><div class="emoji">🎁</div><div class="rule-body"><div class="rule-title">Giveaways: fair play</div><div class="rule-desc">No farming or fake accounts; winners chosen per giveaway rules.</div></div></li>
-
-        <li class="rule"><div class="emoji">👑</div><div class="rule-body"><div class="rule-title">Respect staff decisions</div><div class="rule-desc">If you disagree, appeal calmly — do not publicly harass staff.</div></div></li>
-
-        <li class="rule"><div class="emoji">🎭</div><div class="rule-body"><div class="rule-title">No impersonation</div><div class="rule-desc">Do not impersonate staff, creators, or other users to deceive others.</div></div></li>
-
-        <li class="rule"><div class="emoji">🔒</div><div class="rule-body"><div class="rule-title">Protect privacy</div><div class="rule-desc">No doxxing or sharing private info without consent.</div></div></li>
-
-        <li class="rule"><div class="emoji">😄</div><div class="rule-body"><div class="rule-title">Have fun — responsibly</div><div class="rule-desc">We want a fun server — but don't let fun hurt someone else.</div></div></li>
+        <li class="rule"><div class="emoji">❤️</div><div><div class="rule-title">Be Kind</div><div class="rule-desc">Small kindnesses matter. No microaggressions.</div></div></li>
+        <li class="rule"><div class="emoji">🔒</div><div><div class="rule-title">Protect Privacy</div><div class="rule-desc">No doxxing or posting private info without consent.</div></div></li>
+        <li class="rule"><div class="emoji">👑</div><div><div class="rule-title">Respect Staff</div><div class="rule-desc">If staff asks something, comply or appeal privately.</div></div></li>
       </ul>
     </div>
 
-    <footer>
-      © 2026 • Server Rules • Stay cool 😎 • Press <strong>Agree & Continue</strong> to accept.
-    </footer>
+    <footer>© 2026 • Press <strong>Agree & Continue</strong> to accept these rules.</footer>
   </div>
 
-  <div id="copyToast" class="copy-toast" role="status" aria-live="polite">Rules copied to clipboard</div>
+  <div id="copyToast" class="toast" role="status" aria-live="polite">Copied</div>
 
   <script>
-    // DOM refs
+    /*****************
+     * Smooth loader
+     *****************/
     const loaderWrap = document.getElementById('loaderWrap');
-    const progressFill = document.getElementById('progressFill');
-    const loaderStage = document.getElementById('loaderStage');
-    const loaderETA = document.getElementById('loaderETA');
+    const spinner = document.getElementById('spinner'); // svg circle
+    const progressInner = document.getElementById('progressInner');
+    const stageText = document.getElementById('stageText');
+    const etaText = document.getElementById('etaText');
     const agreeBtn = document.getElementById('agreeBtn');
     const skipBtn = document.getElementById('skipBtn');
     const mainContent = document.getElementById('mainContent');
     const copyBtn = document.getElementById('copyChannel');
     const copyToast = document.getElementById('copyToast');
 
-    // Lists
     const channelItems = document.querySelectorAll('#channelList .rule');
     const voiceItems = document.querySelectorAll('#voiceList .rule');
     const extraItems = document.querySelectorAll('#extraList .rule');
 
-    // simulation parameters
-    let progress = 0;
-    const totalTime = 1700; // ms overall
-    const tick = 45; // ms
-    const steps = Math.ceil(totalTime / tick);
-    const increment = 100 / steps;
-    let step = 0;
+    // confetti canvas
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const ctx = confettiCanvas.getContext && confettiCanvas.getContext('2d');
 
-    // mapping stages to messages
-    const stages = [
-      {p: 5, text: 'Loading assets…'},
-      {p: 30, text: 'Warming up rules engine…'},
-      {p: 55, text: 'Applying fair moderation policy…'},
-      {p: 78, text: 'Finalizing tips & examples…'},
-      {p: 95, text: 'Ready to go!'}
-    ];
+    // resize confetti canvas
+    function resizeCanvas(){
+      confettiCanvas.width = innerWidth * devicePixelRatio;
+      confettiCanvas.height = innerHeight * devicePixelRatio;
+      confettiCanvas.style.width = innerWidth + 'px';
+      confettiCanvas.style.height = innerHeight + 'px';
+      if (ctx) ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    }
+    resizeCanvas();
+    addEventListener('resize', resizeCanvas);
 
-    // utility to get stage text
-    function stageText(p){
-      for(let i=stages.length-1;i>=0;i--){
-        if(p >= stages[i].p) return stages[i].text;
+    // confetti particles
+    let confettiParticles = [];
+    function spawnConfetti(count=80){
+      confettiParticles = [];
+      for(let i=0;i<count;i++){
+        confettiParticles.push({
+          x: Math.random() * innerWidth,
+          y: -20 - Math.random() * 200,
+          vx: (Math.random() - 0.5) * 6,
+          vy: 1 + Math.random() * 4,
+          size: 6 + Math.random()*8,
+          color: ['#5865f2','#7cc0ff','#9b7bff','#ff7eb3','#ffd166'][Math.floor(Math.random()*5)],
+          rot: Math.random()*360,
+          rotSpeed: (Math.random()-0.5)*8,
+          life: 100 + Math.random()*80
+        });
       }
-      return stages[0].text;
+      confettiCanvas.style.opacity = 1;
+      requestAnimationFrame(confettiLoop);
+    }
+    function confettiLoop(){
+      if(!ctx) return;
+      ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+      confettiParticles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.03;
+        p.rot += p.rotSpeed;
+        p.life -= 1;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot * Math.PI/180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.6);
+        ctx.restore();
+        if(p.y > innerHeight + 50 || p.life <= 0) confettiParticles.splice(i,1);
+      });
+      if(confettiParticles.length) requestAnimationFrame(confettiLoop);
+      else setTimeout(()=> confettiCanvas.style.opacity = 0, 220);
     }
 
-    // reveal function (staggered)
-    function revealList(listNodeList, startDelay=0) {
-      listNodeList.forEach((el, i) => {
-        setTimeout(() => el.classList.add('show'), startDelay + i * 60);
+    // stages for loader
+    const STAGES = [
+      {p: 4, text: 'Warming up UI…'},
+      {p: 18, text: 'Preparing friendly rules…'},
+      {p: 40, text: 'Applying consistency checks…'},
+      {p: 62, text: 'Polishing wording & examples…'},
+      {p: 86, text: 'Finalizing animations…'},
+      {p: 98, text: 'Complete'}
+    ];
+
+    function stageFor(p){
+      for(let i=STAGES.length-1;i>=0;i--) if(p >= STAGES[i].p) return STAGES[i].text;
+      return STAGES[0].text;
+    }
+
+    // animate spinner stroke dash offset and progress inner smoothly using rAF
+    let progress = 0; // 0..100
+    let target = 0;
+    let startTime = null;
+    let easing = t => (--t)*t*t+1; // easeOutCubic-like
+
+    // simulate target increment schedule, but keep it non-linear & unpredictable
+    const schedule = [
+      {t:0, v: 6},
+      {t:350, v: 18},
+      {t:700, v: 42},
+      {t:1100, v: 68},
+      {t:1400, v: 85},
+      {t:1700, v: 92},
+      {t:2200, v: 98}
+    ]; // ms timeline -> percent
+    let loaderStarted = performance.now();
+
+    function computeTarget(now){
+      const elapsed = now - loaderStarted;
+      for(let i=schedule.length-1;i>=0;i--) if(elapsed >= schedule[i].t) return schedule[i].v;
+      return schedule[0].v;
+    }
+
+    function stepFrame(now){
+      if(!startTime) startTime = now;
+      // update target based on timeline
+      target = computeTarget(now);
+      // small random jitter to avoid mechanical motion
+      target += Math.random()*1.3;
+
+      // advance progress towards target with smoothing
+      const delta = (target - progress) * 0.12;
+      progress += Math.max(Math.min(delta, 6), -6); // clamp step
+
+      // ensure we don't overshoot
+      if(progress > 100) progress = 100;
+      progressInner.style.width = progress.toFixed(0) + '%';
+      progressInner.textContent = Math.round(progress) + '%';
+      document.querySelector('.progressInner').setAttribute('aria-valuenow', Math.round(progress));
+
+      // animate svg stroke (circle circumference 2πr ~ 276.46)
+      const circumference = 2 * Math.PI * 44;
+      const dash = circumference * (1 - progress / 100);
+      spinner.setAttribute('stroke-dashoffset', dash);
+
+      // update stage text & ETA
+      stageText.textContent = stageFor(progress);
+      const approxRemaining = Math.max(0, ((98 - progress) / 20) * 0.9); // heuristic seconds
+      etaText.textContent = (progress >= 98) ? 'Ready' : `ETA: ${approxRemaining.toFixed(1)}s`;
+
+      // reveal sections at thresholds
+      if(progress >= 20) reveal(channelItems, 0);
+      if(progress >= 55) reveal(voiceItems, 60);
+      if(progress >= 80) reveal(extraItems, 120);
+
+      // enable agree when reached ~99
+      if(progress >= 99){ agreeBtn.disabled = false; agreeBtn.removeAttribute('aria-disabled'); }
+
+      // continue animating until final stable state
+      if(progress < 100) requestAnimationFrame(stepFrame);
+      else {
+        // gracefully finish: settle to 100 and then hide overlay
+        progress = 100;
+        progressInner.style.width = '100%';
+        progressInner.textContent = '100%';
+        spinner.setAttribute('stroke-dashoffset', 0);
+        stageText.textContent = 'Ready';
+        etaText.textContent = 'Ready';
+        setTimeout(() => hideLoader(), 260);
+      }
+    }
+
+    // reveal function with stagger
+    function reveal(list, delay){
+      list.forEach((el,i) => {
+        if(!el.classList.contains('show')) setTimeout(()=>el.classList.add('show'), delay + i*55);
       });
     }
 
-    // run simulated loader
-    const loaderInterval = setInterval(() => {
-      step++;
-      progress = Math.min(100, progress + increment * (1 + Math.random()*0.4));
-      progressFill.style.width = progress.toFixed(0) + '%';
-      progressFill.textContent = Math.min(100, Math.round(progress)) + '%';
-      loaderStage.textContent = stageText(progress);
-      loaderETA.textContent = 'ETA: ' + Math.max(0, ((totalTime - step * tick)/1000).toFixed(1)) + 's';
+    // start animation loop
+    requestAnimationFrame(stepFrame);
 
-      // reveal sets at thresholds
-      if(progress >= 25 && !channelItems[0].classList.contains('show')) revealList(channelItems, 0);
-      if(progress >= 55 && !voiceItems[0].classList.contains('show')) revealList(voiceItems, 80);
-      if(progress >= 80 && !extraItems[0].classList.contains('show')) revealList(extraItems, 150);
+    // allow skip: jump immediately to complete and reveal everything
+    skipBtn.addEventListener('click', () => {
+      // set progress to 100 immediately, reveal content and enable agree
+      progress = 100; progressInner.style.width = '100%'; progressInner.textContent = '100%';
+      spinner.setAttribute('stroke-dashoffset', 0);
+      stageText.textContent = 'Skipped';
+      etaText.textContent = 'Ready';
+      agreeBtn.disabled = false; agreeBtn.removeAttribute('aria-disabled');
+      reveal(channelItems, 0); reveal(voiceItems, 60); reveal(extraItems, 120);
+      setTimeout(() => hideLoader(), 180);
+    });
 
-      // enable agree when almost done
-      if(progress >= 98){
-        agreeBtn.disabled = false;
-        agreeBtn.removeAttribute('aria-disabled');
-      }
-
-      if(progress >= 100 || step > steps + 6){
-        clearInterval(loaderInterval);
-        // slight delay so users see 100%
-        setTimeout(() => finishLoading(), 260);
-      }
-    }, tick);
-
-    // finish and hide loader
-    function finishLoading(){
+    // hide loader and show content
+    function hideLoader(){
       loaderWrap.style.opacity = 0;
       loaderWrap.style.visibility = 'hidden';
       mainContent.removeAttribute('aria-hidden');
       mainContent.focus();
     }
 
-    // skip button: immediately show content
-    skipBtn.addEventListener('click', () => {
-      clearInterval(loaderInterval);
-      progressFill.style.width = '100%';
-      progressFill.textContent = '100%';
-      loaderStage.textContent = 'Skipped';
-      agreeBtn.disabled = false;
-      agreeBtn.removeAttribute('aria-disabled');
-      // reveal everything quickly
-      revealList(channelItems, 0);
-      revealList(voiceItems, 60);
-      revealList(extraItems, 120);
-      setTimeout(finishLoading, 240);
-    });
-
-    // agree button: animate small acknowledgement
+    // agree button behavior: confetti + store
     agreeBtn.addEventListener('click', () => {
       if(agreeBtn.disabled) return;
       agreeBtn.textContent = 'Accepted ✓';
-      agreeBtn.style.transform = 'scale(.98)';
-      setTimeout(() => agreeBtn.style.transform = '', 220);
-      // store a flag (local)
-      try { localStorage.setItem('serverRulesAccepted','true'); } catch(e){}
-      // last step: hide any loader if visible (robust)
-      loaderWrap.style.opacity = 0;
-      loaderWrap.style.visibility = 'hidden';
-      mainContent.removeAttribute('aria-hidden');
-      mainContent.focus();
+      agreeBtn.disabled = true;
+      localStorage.setItem('serverRulesAccepted','true');
+
+      // small click animation
+      agreeBtn.animate([{transform:'scale(1)'},{transform:'scale(.96)'}],{duration:160,fill:'forwards',easing:'ease-out'});
+      // confetti
+      spawnConfetti(90);
+      // hide loader if visible
+      hideLoader();
+      // toast
+      showToast('Thanks — rules accepted!');
     });
 
-    // Copy rules to clipboard
+    // copy rules function
     function collectRulesText(){
-      const sections = ['Server Rules\n'];
-      const allLists = [
-        {title: 'Channel Rules', nodeList: channelItems},
-        {title: 'Voice Rules', nodeList: voiceItems},
-        {title: 'Extra Rules', nodeList: extraItems}
-      ];
-      allLists.forEach(group => {
-        sections.push('— ' + group.title);
-        group.nodeList.forEach(li => {
-          const title = li.querySelector('.rule-title')?.textContent?.trim() || '';
-          const desc = li.querySelector('.rule-desc')?.textContent?.trim() || '';
-          sections.push('- ' + title + (desc ? ' — ' + desc : ''));
+      const out = [];
+      function grab(listName, selector){
+        out.push('== ' + listName + ' ==');
+        document.querySelectorAll(selector + ' .rule').forEach(li=>{
+          const title = li.querySelector('.rule-title')?.textContent.trim() || '';
+          const desc = li.querySelector('.rule-desc')?.textContent.trim() || '';
+          out.push('- ' + title + (desc ? ' — ' + desc : ''));
         });
-        sections.push('');
-      });
-      return sections.join('\n');
+        out.push('');
+      }
+      grab('Channel Rules','#channelList');
+      grab('Voice Rules','#voiceList');
+      grab('Extra Rules','#extraList');
+      return out.join('\n');
     }
 
-    copyBtn.addEventListener('click', async () => {
+    copyBtn.addEventListener('click', async ()=>{
       const txt = collectRulesText();
       try{
         await navigator.clipboard.writeText(txt);
-        showCopyToast('Rules copied to clipboard');
+        showToast('Rules copied to clipboard');
       }catch(e){
-        // fallback: create temp textarea
-        const ta = document.createElement('textarea');
-        ta.value = txt;
-        document.body.appendChild(ta);
-        ta.select();
-        try { document.execCommand('copy'); showCopyToast('Rules copied to clipboard'); } catch(e2) { showCopyToast('Copy failed'); }
+        // fallback
+        const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
+        try{ document.execCommand('copy'); showToast('Rules copied to clipboard'); } catch(e2){ showToast('Copy failed'); }
         ta.remove();
       }
     });
 
-    function showCopyToast(msg){
+    // small toast helper
+    function showToast(msg){
       copyToast.textContent = msg;
       copyToast.classList.add('show');
-      setTimeout(()=> copyToast.classList.remove('show'), 1800);
+      setTimeout(()=> copyToast.classList.remove('show'), 1600);
     }
 
-    // keyboard accessibility: pressing Enter on agree when enabled triggers
-    agreeBtn.addEventListener('keyup', (e)=> { if(e.key === 'Enter' && !agreeBtn.disabled) agreeBtn.click(); });
+    /*****************
+     * Confetti helpers
+     *****************/
+    let confettiAnimating = false;
+    function spawnConfetti(count=60){
+      if(!ctx) return;
+      if(confettiAnimating) return;
+      confettiAnimating = true;
+      // create particles and animate using separate loop (already implemented above)
+      // call spawnConfetti from above declaration (it fills confettiParticles etc)
+      // small delay to show canvas
+      confettiCanvas.style.opacity = 1;
+      // reuse function defined earlier: spawnConfetti (renamed to spawnConfetti earlier)
+      // but to avoid confusion, call the earlier spawnConfetti function declared above
+      // We'll re-use the external one by referencing global function name spawnConfetti
+      // (This function was defined above in the same script block.)
+      // So call the earlier one:
+      // _Note_: In this file, spawnConfetti is already defined earlier; calling it here is fine.
+      // The earlier function will set confettiParticles and start loop.
+      window.spawnConfetti && window.spawnConfetti(count);
+      // reset flag after some time
+      setTimeout(()=> confettiAnimating = false, 1500);
+    }
 
-    // if user already accepted earlier, skip loader quickly
+    // If user already accepted previously, skip quickly
     try{
-      if(localStorage.getItem('serverRulesAccepted') === 'true') {
-        // fast skip
-        setTimeout(() => {
-          clearInterval(loaderInterval);
-          revealList(channelItems, 20);
-          revealList(voiceItems, 80);
-          revealList(extraItems, 140);
-          finishLoading();
-        }, 300);
+      if(localStorage.getItem('serverRulesAccepted') === 'true'){
+        // fast-forward: set progress to 100 and reveal
+        progress = 100;
+        progressInner.style.width = '100%'; progressInner.textContent = '100%';
+        spinner.setAttribute('stroke-dashoffset', 0);
+        stageText.textContent = 'Previously accepted';
+        etaText.textContent = 'Ready';
+        reveal(channelItems, 20); reveal(voiceItems,80); reveal(extraItems,140);
+        setTimeout(()=> hideLoader(), 220);
       }
-    }catch(e){ /* ignore localstorage errors */ }
+    }catch(e){ /* ignore localStorage errors */ }
+
+    // accessibility: allow Enter on Agree
+    agreeBtn.addEventListener('keydown', (e)=> { if(e.key === 'Enter' && !agreeBtn.disabled) agreeBtn.click(); });
+
+    // expose spawnConfetti to window so inner function can call it (declared earlier)
+    window.spawnConfetti = spawnConfetti;
+
+    // ensure spinner initial stroke-dasharray is correct (in case of CSS scaling)
+    (function setSpinnerDash(){
+      const circumference = 2 * Math.PI * 44;
+      spinner.setAttribute('stroke-dasharray', circumference.toFixed(2));
+      spinner.setAttribute('stroke-dashoffset', circumference.toFixed(2));
+    })();
+
+    // Small safety: if requestAnimationFrame loop stalls, ensure loader completes after 6s
+    setTimeout(()=>{
+      if(progress < 100){
+        progress = 100; progressInner.style.width = '100%'; progressInner.textContent = '100%';
+        spinner.setAttribute('stroke-dashoffset', 0);
+        stageText.textContent = 'Timeout — ready';
+        etaText.textContent = 'Ready';
+        reveal(channelItems, 0); reveal(voiceItems,60); reveal(extraItems,120);
+        agreeBtn.disabled = false; agreeBtn.removeAttribute('aria-disabled');
+        setTimeout(()=> hideLoader(), 260);
+      }
+    }, 6000);
   </script>
 </body>
 </html>
