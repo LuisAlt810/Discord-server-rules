@@ -1,174 +1,588 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <title>Server Rules</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root {
+    :root{
       --bg: #0f1115;
-      --card: #161a22;
+      --card: #16161b;
       --accent: #5865f2;
+      --accent-2: #7cc0ff;
       --text: #e6e6eb;
       --muted: #9aa0aa;
-      --danger: #ff5c5c;
+      --glass: rgba(255,255,255,0.04);
+      --danger: #ff6b6b;
       --radius: 14px;
+      --shadow: 0 15px 40px rgba(0,0,0,.45);
     }
 
-    * {
-      box-sizing: border-box;
-      font-family: "Segoe UI", system-ui, sans-serif;
+    /* Reset / base */
+    *{box-sizing:border-box;font-family:"Segoe UI",system-ui,-apple-system,SegoeUIEmoji,Helvetica,Arial;}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 600px at 10% 20%, rgba(88,101,242,0.06), transparent 8%),
+        radial-gradient(1000px 500px at 90% 80%, rgba(124,192,255,0.03), transparent 9%),
+        linear-gradient(180deg, #0d0f13 0%, #07080a 100%);
+      color:var(--text);
+      padding:36px 18px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
     }
 
-    body {
-      margin: 0;
-      background: linear-gradient(180deg, #0f1115, #0b0d12);
-      color: var(--text);
-      padding: 40px 16px;
+    .container{
+      max-width:980px;
+      margin: 0 auto;
+      position:relative;
+      z-index:1;
     }
 
-    .container {
-      max-width: 900px;
-      margin: auto;
+    /* animated header */
+    .headline{
+      text-align:center;
+      margin-bottom:26px;
+    }
+    h1{
+      font-size:2.7rem;
+      margin:0;
+      line-height:1;
+      background: linear-gradient(90deg, var(--accent), #8ea1ff 60%, var(--accent-2));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      display:inline-block;
+      position:relative;
+    }
+    /* subtle sparkle on the title */
+    @keyframes title-glow{
+      0%{filter:brightness(1)}
+      50%{filter:brightness(1.12) saturate(1.05)}
+      100%{filter:brightness(1)}
+    }
+    h1{animation:title-glow 3.5s ease-in-out infinite;}
+
+    .subtitle{
+      color:var(--muted);
+      margin-top:10px;
+      font-size:0.95rem;
+      display:block;
+      opacity:.95;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 40px;
-      font-size: 2.4rem;
-      background: linear-gradient(90deg, var(--accent), #8ea1ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    /* rules card */
+    .rules-card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      padding:20px;
+      margin-bottom:22px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(255,255,255,0.02);
+      transition:transform .28s ease, box-shadow .28s ease;
+      overflow:hidden;
+    }
+    .rules-card:hover{ transform:translateY(-6px); box-shadow:0 30px 80px rgba(0,0,0,.6); }
+
+    .rules-title{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-bottom:12px;
+      color:var(--accent);
+      font-weight:600;
+      font-size:1.1rem;
     }
 
-    .rules-card {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 30px;
-      box-shadow: 0 15px 40px rgba(0,0,0,.35);
-      transition: transform .3s ease, box-shadow .3s ease;
+    ul{ padding-left:0; margin:0; list-style:none; }
+
+    /* rule item styling */
+    li.rule{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:12px 14px;
+      margin-bottom:10px;
+      background:var(--glass);
+      border-radius:10px;
+      line-height:1.35;
+      opacity:0;
+      transform:translateY(12px) scale(.995);
+      transition:all .45s cubic-bezier(.2,.95,.2,1);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    li.rule.show{
+      opacity:1;
+      transform:none;
     }
 
-    .rules-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 25px 60px rgba(0,0,0,.45);
+    .emoji{
+      font-size:1.25rem;
+      width:36px;
+      height:36px;
+      display:inline-grid;
+      place-items:center;
+      flex-shrink:0;
+      transform-origin:center;
+      transition:transform .35s ease;
+    }
+    li.rule:hover .emoji{ transform:rotate(-8deg) translateY(-2px); }
+
+    .rule-body{ flex:1; min-width:0; }
+    .rule-title{ font-weight:700; display:flex; align-items:center; gap:10px; color:var(--text); }
+    .rule-desc{ font-size:0.93rem; color:var(--muted); margin-top:4px; }
+
+    /* tiny severity pill */
+    .pill{
+      margin-left:auto;
+      font-size:0.74rem;
+      padding:4px 8px;
+      border-radius:999px;
+      background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.02);
+      color:var(--muted);
     }
 
-    .rules-title {
-      font-size: 1.4rem;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--accent);
+    a{ color:var(--accent); text-decoration:none; }
+
+    footer{
+      text-align:center;
+      margin-top:28px;
+      color:var(--muted);
+      font-size:0.92rem;
     }
 
-    ul {
-      padding-left: 0;
-      list-style: none;
-      margin: 0;
+    /* Loading overlay */
+    .loader-wrap{
+      position:fixed;
+      inset:0;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(180deg, rgba(6,8,10,0.92), rgba(6,8,10,0.86));
+      z-index:999;
+      transition:opacity .5s ease, visibility .5s ease;
+    }
+    .loader{
+      width:min(760px,92%);
+      max-width:820px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:16px;
+      padding:22px;
+      box-shadow:0 20px 60px rgba(0,0,0,.6);
+      border:1px solid rgba(255,255,255,0.03);
+      text-align:center;
+    }
+    .loader h2{
+      margin:0 0 8px 0;
+      color:var(--text);
+      font-size:1.1rem;
+    }
+    .loader p{ margin:0; color:var(--muted); font-size:0.95rem; }
+
+    .progress-bar{
+      margin-top:18px;
+      height:14px;
+      background:rgba(255,255,255,0.03);
+      border-radius:10px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .progress-fill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, var(--accent), var(--accent-2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-weight:700;
+      font-size:0.86rem;
+      letter-spacing:.5px;
+      transition:width .25s linear;
     }
 
-    li {
-      padding: 10px 14px;
-      margin-bottom: 8px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 10px;
-      line-height: 1.4;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all .4s ease;
+    .loader-meta{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:12px;
+      color:var(--muted);
+      font-size:0.88rem;
+      align-items:center;
     }
 
-    li.show {
-      opacity: 1;
-      transform: translateY(0);
+    /* Agree bar */
+    .agree-row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-top:8px;
+      justify-content:center;
+    }
+    .btn{
+      background:transparent;
+      color:var(--text);
+      border:1px solid rgba(255,255,255,0.06);
+      padding:10px 14px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:700;
+      transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+    .btn:active{ transform:translateY(1px); }
+    .btn.primary{
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      border:none;
+      box-shadow:0 8px 30px rgba(88,101,242,0.14);
+    }
+    .btn.ghost{
+      background:transparent;
+    }
+    .btn[disabled]{ opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
+
+    /* copy notice */
+    .copy-toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      background:rgba(0,0,0,0.6);
+      color:#fff;
+      padding:10px 12px;
+      border-radius:10px;
+      font-size:0.92rem;
+      opacity:0;
+      transform:translateY(8px);
+      transition:all .35s ease;
+      z-index:1200;
+      pointer-events:none;
+    }
+    .copy-toast.show{ opacity:1; transform:none; }
+
+    /* small responsive tweaks */
+    @media (max-width:600px){
+      h1{ font-size:2rem; }
+      .rules-card{ padding:16px; }
+      .emoji{ width:34px; height:34px; }
     }
 
-    li span {
-      color: var(--muted);
+    /* subtle floating orbs */
+    .orb{
+      position:fixed;
+      border-radius:999px;
+      filter:blur(30px) saturate(110%);
+      opacity:.12;
+      pointer-events:none;
+      z-index:0;
+      mix-blend-mode:screen;
+      animation:float 8s ease-in-out infinite;
+    }
+    .orb.o1{ width:420px; height:160px; left:-70px; top:-40px; background:linear-gradient(90deg,#5865f2,#7cc0ff); animation-duration:10s; }
+    .orb.o2{ width:300px; height:120px; right:-60px; bottom:-30px; background:linear-gradient(90deg,#ff7eb3,#a18cff); animation-duration:12s; transform:translateZ(0); }
+    @keyframes float{
+      0%{ transform:translateY(0) scale(1) }
+      50%{ transform:translateY(-18px) scale(1.03) }
+      100%{ transform:translateY(0) scale(1) }
     }
 
-    a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 40px;
-      color: var(--muted);
-      font-size: .9rem;
-    }
+    /* small shimmer effect for rule card header icons */
+    .spark{ display:inline-block; transform-origin:center; animation:pop .95s ease-in-out infinite; opacity:.95; }
+    @keyframes pop{ 0%{transform:scale(.98)}50%{transform:scale(1.02)}100%{transform:scale(.98)} }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>📜 Server Rules</h1>
+  <!-- decorative orbs -->
+  <div class="orb o1" aria-hidden="true"></div>
+  <div class="orb o2" aria-hidden="true"></div>
 
-    <div class="rules-card">
-      <div class="rules-title">📜 Channel Rules</div>
-      <ul>
-        <li>🤝 <b>Be Respectful</b> — Kindness comes first.</li>
-        <li>🔇 <b>No Spamming</b> — Keep it clean and readable.</li>
-        <li>📌 <b>Stay On Topic</b> — Post in the correct channel.</li>
-        <li>🚫 <b>No NSFW</b> — This is a safe space.</li>
-        <li>📢 <b>No Advertising</b> — DM ads = ban.</li>
-        <li>🗣️ <b>English Only</b> — Unless channel says otherwise.</li>
-        <li>🔔 <b>Don’t Ping Excessively</b> — Use pings wisely.</li>
-        <li>🛑 <b>No Mini-Modding</b> — Let staff do their job.</li>
-        <li>📜 <b>Follow Discord TOS</b> — <a href="https://discord.com/guidelines" target="_blank">discord.com/guidelines</a></li>
-        <li>💬 <b>Spoilers & Threads</b> — Use properly when needed.</li>
+  <!-- Loading overlay -->
+  <div id="loaderWrap" class="loader-wrap" role="status" aria-live="polite">
+    <div class="loader" id="loader">
+      <h2>Preparing the server rules <span style="opacity:.85">— loading</span></h2>
+      <p>Friendly reminder: these rules keep the space safe and fun for everyone.</p>
+
+      <div class="progress-bar" aria-hidden="true" style="margin-top:18px;">
+        <div id="progressFill" class="progress-fill" style="width:0%">0%</div>
+      </div>
+
+      <div class="loader-meta">
+        <span id="loaderStage">Initializing…</span>
+        <span id="loaderETA">ETA: 1.8s</span>
+      </div>
+
+      <div class="agree-row" style="margin-top:14px;">
+        <button id="skipBtn" class="btn ghost" title="Skip intro">Skip</button>
+        <button id="agreeBtn" class="btn primary" disabled aria-disabled="true">Agree & Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="mainContent" aria-hidden="true" tabindex="-1">
+    <div class="headline">
+      <h1>📜 Server Rules</h1>
+      <span class="subtitle">Short, clear, and fair — follow them and people will thank you.</span>
+    </div>
+
+    <!-- Channel rules -->
+    <div class="rules-card" aria-labelledby="chTitle">
+      <div class="rules-title" id="chTitle">
+        <span class="spark">📜</span>
+        Channel Rules
+        <span class="pill" title="Enforced by staff">Enforced</span>
+      </div>
+
+      <ul id="channelList">
+        <li class="rule"><div class="emoji">🤝</div><div class="rule-body"><div class="rule-title">Be respectful <span style="margin-left:8px;color:var(--muted);font-weight:600;font-size:.86rem">(basic)</span></div><div class="rule-desc">No insults, targeted harassment, or hateful slurs. Disagreements are fine — personal attacks are not.</div></div></li>
+
+        <li class="rule"><div class="emoji">🔇</div><div class="rule-body"><div class="rule-title">No spamming or flooding</div><div class="rule-desc">Repeated messages, giant walls of text, or excessive emoji are not allowed. Keep conversations readable.</div></div></li>
+
+        <li class="rule"><div class="emoji">📌</div><div class="rule-body"><div class="rule-title">Post in the correct channel</div><div class="rule-desc">Memes in #memes, help in #support — follow channel descriptions or staff guidance.</div></div></li>
+
+        <li class="rule"><div class="emoji">🚫</div><div class="rule-body"><div class="rule-title">No NSFW / sexual content</div><div class="rule-desc">This server is safe for a broad audience. Sexual or explicit content will be removed and may result in a ban.</div></div></li>
+
+        <li class="rule"><div class="emoji">📢</div><div class="rule-body"><div class="rule-title">No advertising without permission</div><div class="rule-desc">DM ads, server drops, or unsolicited links are prohibited. Ask staff for promo rules.</div></div></li>
+
+        <li class="rule"><div class="emoji">🗣️</div><div class="rule-body"><div class="rule-title">Language & clarity</div><div class="rule-desc">Use English in main chat unless a channel says otherwise. Be clear — avoid excessive shorthand that confuses others.</div></div></li>
+
+        <li class="rule"><div class="emoji">🔔</div><div class="rule-body"><div class="rule-title">Don't ping excessively</div><div class="rule-desc">Avoid @everyone/@here and repeated pings. Use DMs when appropriate.</div></div></li>
+
+        <li class="rule"><div class="emoji">🛑</div><div class="rule-body"><div class="rule-title">Let staff moderate</div><div class="rule-desc">If you have an issue with a user, report it to staff. Do not take moderation into your own hands.</div></div></li>
+
+        <li class="rule"><div class="emoji">📜</div><div class="rule-body"><div class="rule-title">Follow Discord Terms</div><div class="rule-desc">Illegal activity and TOS violations will be reported to Discord. Read <a href="https://discord.com/guidelines" target="_blank" rel="noopener">Discord Community Guidelines</a>.</div></div></li>
+
+        <li class="rule"><div class="emoji">💬</div><div class="rule-body"><div class="rule-title">Use spoilers & threads appropriately</div><div class="rule-desc">Spoilers must use spoiler tags; keep long side chats to threads to reduce clutter.</div></div></li>
+      </ul>
+
+      <div style="display:flex;gap:10px;margin-top:12px;align-items:center;justify-content:flex-end">
+        <button id="copyChannel" class="btn">Copy rules</button>
+      </div>
+    </div>
+
+    <!-- Voice rules -->
+    <div class="rules-card" aria-labelledby="vcTitle">
+      <div class="rules-title" id="vcTitle">
+        <span class="spark">🎧</span>
+        Voice Chat Rules
+        <span class="pill">Voice</span>
+      </div>
+
+      <ul id="voiceList">
+        <li class="rule"><div class="emoji">🎙️</div><div class="rule-body"><div class="rule-title">Use push-to-talk or mute when not speaking</div><div class="rule-desc">Keep background noise to a minimum; mute when away.</div></div></li>
+
+        <li class="rule"><div class="emoji">🔊</div><div class="rule-body"><div class="rule-title">Respect volume levels</div><div class="rule-desc">No ear-rape audio, sudden loud sounds, or music at high volumes.</div></div></li>
+
+        <li class="rule"><div class="emoji">🗯️</div><div class="rule-body"><div class="rule-title">Don't interrupt</div><div class="rule-desc">Allow others to speak; avoid talking over people or creating a hostile environment.</div></div></li>
+
+        <li class="rule"><div class="emoji">🎵</div><div class="rule-body"><div class="rule-title">Music only in dedicated VC</div><div class="rule-desc">Use the music channel for DJing/streaming; ask before sharing audio in other VCs.</div></div></li>
+
+        <li class="rule"><div class="emoji">🎥</div><div class="rule-body"><div class="rule-title">No recording without consent</div><div class="rule-desc">Always ask — recording without permission is strictly forbidden.</div></div></li>
+
+        <li class="rule"><div class="emoji">👮‍♂️</div><div class="rule-body"><div class="rule-title">Follow staff directions</div><div class="rule-desc">If staff asks you to mute/leave, do so politely — appeals can be made via DM.</div></div></li>
       </ul>
     </div>
 
-    <div class="rules-card">
-      <div class="rules-title">🎧 Voice Chat Rules</div>
-      <ul>
-        <li>🎙️ <b>Use Push-to-Talk</b> — No background noise.</li>
-        <li>🔊 <b>No Ear Rape</b> — Be mindful of volume.</li>
-        <li>🗯️ <b>Respect Others</b> — No yelling or interrupting.</li>
-        <li>🎵 <b>Music Only in Music VC</b> — No random songs.</li>
-        <li>😠 <b>No Harassment</b> — Kindness always.</li>
-        <li>🎥 <b>No Recording</b> — Unless approved.</li>
-        <li>🧑‍🎤 <b>Appropriate Avatars</b> — Keep it clean.</li>
-        <li>💤 <b>No AFK in Active VCs</b> — Don’t take up space.</li>
-        <li>🎤 <b>One at a Time</b> — Don’t talk over others.</li>
-        <li>👮‍♂️ <b>Obey Staff</b> — If asked to leave, please do.</li>
-      </ul>
-    </div>
+    <!-- Extra rules -->
+    <div class="rules-card" aria-labelledby="exTitle">
+      <div class="rules-title" id="exTitle">
+        <span class="spark">🌟</span>
+        Extra Server Rules
+        <span class="pill">General</span>
+      </div>
 
-    <div class="rules-card">
-      <div class="rules-title">🌟 Extra Server Rules</div>
-      <ul>
-        <li>❤️ <b>Be Kind</b> — Golden rule always.</li>
-        <li>🎁 <b>Giveaways Are for Actives</b> — No farming.</li>
-        <li>👑 <b>Respect Staff Decisions</b> — No backtalk.</li>
-        <li>🎭 <b>No Impersonation</b> — Be yourself.</li>
-        <li>📰 <b>No Fake News</b> — Keep it real.</li>
-        <li>😂 <b>Memes in Meme Channel</b> — No spam elsewhere.</li>
-        <li>⚠️ <b>Use Spoiler Tags</b> — Don’t ruin surprises.</li>
-        <li>🎈 <b>No Nitro Begging</b> — It’s annoying.</li>
-        <li>🔒 <b>Protect Privacy</b> — Yours and others’.</li>
-        <li>😄 <b>Fun Allowed</b> — Just don’t take it too far.</li>
+      <ul id="extraList">
+        <li class="rule"><div class="emoji">❤️</div><div class="rule-body"><div class="rule-title">Be kind and inclusive</div><div class="rule-desc">Treat others how you'd like to be treated; microaggressions aren't allowed.</div></div></li>
+
+        <li class="rule"><div class="emoji">🎁</div><div class="rule-body"><div class="rule-title">Giveaways: fair play</div><div class="rule-desc">No farming or fake accounts; winners chosen per giveaway rules.</div></div></li>
+
+        <li class="rule"><div class="emoji">👑</div><div class="rule-body"><div class="rule-title">Respect staff decisions</div><div class="rule-desc">If you disagree, appeal calmly — do not publicly harass staff.</div></div></li>
+
+        <li class="rule"><div class="emoji">🎭</div><div class="rule-body"><div class="rule-title">No impersonation</div><div class="rule-desc">Do not impersonate staff, creators, or other users to deceive others.</div></div></li>
+
+        <li class="rule"><div class="emoji">🔒</div><div class="rule-body"><div class="rule-title">Protect privacy</div><div class="rule-desc">No doxxing or sharing private info without consent.</div></div></li>
+
+        <li class="rule"><div class="emoji">😄</div><div class="rule-body"><div class="rule-title">Have fun — responsibly</div><div class="rule-desc">We want a fun server — but don't let fun hurt someone else.</div></div></li>
       </ul>
     </div>
 
     <footer>
-      © 2026 • Server Rules • Stay cool 😎
+      © 2026 • Server Rules • Stay cool 😎 • Press <strong>Agree & Continue</strong> to accept.
     </footer>
   </div>
 
-  <script>
-    // Smooth reveal animation
-    const items = document.querySelectorAll("li");
-    items.forEach((item, i) => {
-      setTimeout(() => item.classList.add("show"), i * 60);
-    });
-  </script>
+  <div id="copyToast" class="copy-toast" role="status" aria-live="polite">Rules copied to clipboard</div>
 
+  <script>
+    // DOM refs
+    const loaderWrap = document.getElementById('loaderWrap');
+    const progressFill = document.getElementById('progressFill');
+    const loaderStage = document.getElementById('loaderStage');
+    const loaderETA = document.getElementById('loaderETA');
+    const agreeBtn = document.getElementById('agreeBtn');
+    const skipBtn = document.getElementById('skipBtn');
+    const mainContent = document.getElementById('mainContent');
+    const copyBtn = document.getElementById('copyChannel');
+    const copyToast = document.getElementById('copyToast');
+
+    // Lists
+    const channelItems = document.querySelectorAll('#channelList .rule');
+    const voiceItems = document.querySelectorAll('#voiceList .rule');
+    const extraItems = document.querySelectorAll('#extraList .rule');
+
+    // simulation parameters
+    let progress = 0;
+    const totalTime = 1700; // ms overall
+    const tick = 45; // ms
+    const steps = Math.ceil(totalTime / tick);
+    const increment = 100 / steps;
+    let step = 0;
+
+    // mapping stages to messages
+    const stages = [
+      {p: 5, text: 'Loading assets…'},
+      {p: 30, text: 'Warming up rules engine…'},
+      {p: 55, text: 'Applying fair moderation policy…'},
+      {p: 78, text: 'Finalizing tips & examples…'},
+      {p: 95, text: 'Ready to go!'}
+    ];
+
+    // utility to get stage text
+    function stageText(p){
+      for(let i=stages.length-1;i>=0;i--){
+        if(p >= stages[i].p) return stages[i].text;
+      }
+      return stages[0].text;
+    }
+
+    // reveal function (staggered)
+    function revealList(listNodeList, startDelay=0) {
+      listNodeList.forEach((el, i) => {
+        setTimeout(() => el.classList.add('show'), startDelay + i * 60);
+      });
+    }
+
+    // run simulated loader
+    const loaderInterval = setInterval(() => {
+      step++;
+      progress = Math.min(100, progress + increment * (1 + Math.random()*0.4));
+      progressFill.style.width = progress.toFixed(0) + '%';
+      progressFill.textContent = Math.min(100, Math.round(progress)) + '%';
+      loaderStage.textContent = stageText(progress);
+      loaderETA.textContent = 'ETA: ' + Math.max(0, ((totalTime - step * tick)/1000).toFixed(1)) + 's';
+
+      // reveal sets at thresholds
+      if(progress >= 25 && !channelItems[0].classList.contains('show')) revealList(channelItems, 0);
+      if(progress >= 55 && !voiceItems[0].classList.contains('show')) revealList(voiceItems, 80);
+      if(progress >= 80 && !extraItems[0].classList.contains('show')) revealList(extraItems, 150);
+
+      // enable agree when almost done
+      if(progress >= 98){
+        agreeBtn.disabled = false;
+        agreeBtn.removeAttribute('aria-disabled');
+      }
+
+      if(progress >= 100 || step > steps + 6){
+        clearInterval(loaderInterval);
+        // slight delay so users see 100%
+        setTimeout(() => finishLoading(), 260);
+      }
+    }, tick);
+
+    // finish and hide loader
+    function finishLoading(){
+      loaderWrap.style.opacity = 0;
+      loaderWrap.style.visibility = 'hidden';
+      mainContent.removeAttribute('aria-hidden');
+      mainContent.focus();
+    }
+
+    // skip button: immediately show content
+    skipBtn.addEventListener('click', () => {
+      clearInterval(loaderInterval);
+      progressFill.style.width = '100%';
+      progressFill.textContent = '100%';
+      loaderStage.textContent = 'Skipped';
+      agreeBtn.disabled = false;
+      agreeBtn.removeAttribute('aria-disabled');
+      // reveal everything quickly
+      revealList(channelItems, 0);
+      revealList(voiceItems, 60);
+      revealList(extraItems, 120);
+      setTimeout(finishLoading, 240);
+    });
+
+    // agree button: animate small acknowledgement
+    agreeBtn.addEventListener('click', () => {
+      if(agreeBtn.disabled) return;
+      agreeBtn.textContent = 'Accepted ✓';
+      agreeBtn.style.transform = 'scale(.98)';
+      setTimeout(() => agreeBtn.style.transform = '', 220);
+      // store a flag (local)
+      try { localStorage.setItem('serverRulesAccepted','true'); } catch(e){}
+      // last step: hide any loader if visible (robust)
+      loaderWrap.style.opacity = 0;
+      loaderWrap.style.visibility = 'hidden';
+      mainContent.removeAttribute('aria-hidden');
+      mainContent.focus();
+    });
+
+    // Copy rules to clipboard
+    function collectRulesText(){
+      const sections = ['Server Rules\n'];
+      const allLists = [
+        {title: 'Channel Rules', nodeList: channelItems},
+        {title: 'Voice Rules', nodeList: voiceItems},
+        {title: 'Extra Rules', nodeList: extraItems}
+      ];
+      allLists.forEach(group => {
+        sections.push('— ' + group.title);
+        group.nodeList.forEach(li => {
+          const title = li.querySelector('.rule-title')?.textContent?.trim() || '';
+          const desc = li.querySelector('.rule-desc')?.textContent?.trim() || '';
+          sections.push('- ' + title + (desc ? ' — ' + desc : ''));
+        });
+        sections.push('');
+      });
+      return sections.join('\n');
+    }
+
+    copyBtn.addEventListener('click', async () => {
+      const txt = collectRulesText();
+      try{
+        await navigator.clipboard.writeText(txt);
+        showCopyToast('Rules copied to clipboard');
+      }catch(e){
+        // fallback: create temp textarea
+        const ta = document.createElement('textarea');
+        ta.value = txt;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); showCopyToast('Rules copied to clipboard'); } catch(e2) { showCopyToast('Copy failed'); }
+        ta.remove();
+      }
+    });
+
+    function showCopyToast(msg){
+      copyToast.textContent = msg;
+      copyToast.classList.add('show');
+      setTimeout(()=> copyToast.classList.remove('show'), 1800);
+    }
+
+    // keyboard accessibility: pressing Enter on agree when enabled triggers
+    agreeBtn.addEventListener('keyup', (e)=> { if(e.key === 'Enter' && !agreeBtn.disabled) agreeBtn.click(); });
+
+    // if user already accepted earlier, skip loader quickly
+    try{
+      if(localStorage.getItem('serverRulesAccepted') === 'true') {
+        // fast skip
+        setTimeout(() => {
+          clearInterval(loaderInterval);
+          revealList(channelItems, 20);
+          revealList(voiceItems, 80);
+          revealList(extraItems, 140);
+          finishLoading();
+        }, 300);
+      }
+    }catch(e){ /* ignore localstorage errors */ }
+  </script>
 </body>
 </html>
