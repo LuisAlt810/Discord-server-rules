@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <title>Server Rules — Update v3</title>
+  <title>Server Rules — Update v3 (Fixed)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root{
@@ -44,10 +44,16 @@
       position:fixed;inset:0;display:grid;place-items:center;background:linear-gradient(180deg, rgba(3,4,6,0.94), rgba(3,4,6,0.88));z-index:9999;backdrop-filter: blur(6px);
       transition:opacity .45s ease, visibility .45s ease; will-change:opacity;
     }
-    .loaderCard{width:min(820px,94%);padding:20px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 30px 80px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,0.02);}
+    .loaderCard{
+      width:min(820px,94%);padding:20px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 30px 80px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,0.02);
+      transform:translateY(6px); opacity:0; animation:cardIn .5s ease forwards .08s;
+    }
+    @keyframes cardIn{ to { transform:none; opacity:1; } }
 
     .loader-top{display:flex;gap:14px;align-items:center}
-    .logoRing{width:76px;height:76px;border-radius:999px;display:grid;place-items:center;background:linear-gradient(90deg,#0000, rgba(255,255,255,0.02));position:relative}
+    .logoRing{width:76px;height:76px;border-radius:999px;display:grid;place-items:center;background:linear-gradient(90deg,#0000, rgba(255,255,255,0.02));position:relative;box-shadow:0 6px 22px rgba(0,0,0,.45);}
+    .logoRing::after{content:"";position:absolute;inset:0;border-radius:999px;padding:2px;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));opacity:.06;filter:blur(8px);}
+
     /* radial spinner (SVG centered) */
     .ringSVG{width:68px;height:68px;display:block}
 
@@ -57,8 +63,7 @@
 
     /* neon progress bar */
     .progressOuter{margin-top:16px;background:rgba(255,255,255,0.03);height:14px;border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.02)}
-    .progressInner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent-a),var(--accent-b),var(--accent-c));box-shadow:0 8px 30px rgba(88,101,242,0.14);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;letter-spacing:.6px;transition:width .22s linear}
-
+    #progressInner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent-a),var(--accent-b),var(--accent-c));box-shadow:0 8px 30px rgba(88,101,242,0.14);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;letter-spacing:.6px;transition:width .28s cubic-bezier(.2,.9,.2,1)}
     .loader-meta{display:flex;justify-content:space-between;margin-top:10px;color:var(--muted);font-size:.88rem}
     .loader-actions{display:flex;gap:10px;margin-top:14px;justify-content:center}
     .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text);cursor:pointer;font-weight:700;min-width:96px}
@@ -69,7 +74,11 @@
     .rules-card{background:var(--card);border-radius:12px;padding:18px;margin-bottom:18px;box-shadow:0 14px 40px rgba(0,0,0,.45);border:1px solid rgba(255,255,255,0.02)}
     .rules-title{color:var(--accent-a);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:12px}
     ul{padding:0;margin:0;list-style:none}
-    .rule{display:flex;gap:12px;padding:10px;border-radius:10px;background:rgba(255,255,255,0.015);margin-bottom:8px;opacity:0;transform:translateY(10px);transition:all .45s cubic-bezier(.2,.95,.2,1);}
+    .rule{
+      display:flex;gap:12px;padding:10px;border-radius:10px;background:rgba(255,255,255,0.015);margin-bottom:8px;
+      opacity:0; transform:translateY(10px) scale(.995); transition:opacity .44s cubic-bezier(.2,.95,.2,1), transform .44s cubic-bezier(.2,.95,.2,1);
+      will-change:opacity, transform;
+    }
     .rule.show{opacity:1;transform:none}
     .emoji{width:36px;height:36px;display:grid;place-items:center;font-size:1.2rem}
     .rule-title{font-weight:700}
@@ -84,6 +93,13 @@
     .toast{position:fixed;right:18px;bottom:18px;background:rgba(0,0,0,0.6);color:#fff;padding:10px 12px;border-radius:10px;font-weight:700;transform:translateY(8px);opacity:0;transition:all .28s ease;z-index:13000}
     .toast.show{opacity:1;transform:none}
 
+    /* reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .o1,.o2{animation:none}
+      .loaderCard{animation:none}
+      .rule{transition:none}
+    }
+
     /* responsive */
     @media (max-width:640px){ h1{font-size:1.7rem} .logoRing{width:62px;height:62px} .ringSVG{width:58px;height:58px} .loaderCard{padding:14px} }
   </style>
@@ -97,10 +113,10 @@
     <div class="loaderCard" role="dialog" aria-modal="true" aria-label="Loading rules">
       <div class="loader-top">
         <div class="logoRing" aria-hidden="true">
-          <!-- subtle SVG circular progress (stroke will be animated via JS) -->
-          <svg class="ringSVG" viewBox="0 0 100 100" aria-hidden="true">
+          <!-- subtle SVG circular progress (stroke animated via JS) -->
+          <svg class="ringSVG" viewBox="0 0 100 100" aria-hidden="true" role="img">
             <defs>
-              <linearGradient id="g1" x1="0%" x2="100%" y1="0%" y2="0%">
+              <linearGradient id="g1" x1="0%" x2="100%">
                 <stop offset="0%" stop-color="#5865f2"/>
                 <stop offset="60%" stop-color="#7cc0ff"/>
                 <stop offset="100%" stop-color="#9b7bff"/>
@@ -114,15 +130,15 @@
 
         <div class="loader-text">
           <h2 id="loaderTitle">Preparing the server rules…</h2>
-          <p id="loaderSubtitle">We make this quick and friendly — hang tight (or press Skip).</p>
+          <p id="loaderSubtitle">We make this quick and friendly — press Skip to jump ahead.</p>
 
-          <div class="progressOuter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Loading progress">
-            <div id="progressInner" class="progressInner">0%</div>
+          <div id="progressBar" class="progressOuter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Loading progress">
+            <div id="progressInner">0%</div>
           </div>
 
           <div class="loader-meta">
             <div id="stageText">Initializing</div>
-            <div id="etaText">ETA: 1.5s</div>
+            <div id="etaText">ETA: —</div>
           </div>
         </div>
       </div>
@@ -185,11 +201,12 @@
 
   <script>
     /*****************
-     * Smooth loader
+     * Smooth loader (fixed & improved)
      *****************/
     const loaderWrap = document.getElementById('loaderWrap');
     const spinner = document.getElementById('spinner'); // svg circle
     const progressInner = document.getElementById('progressInner');
+    const progressBar = document.getElementById('progressBar');
     const stageText = document.getElementById('stageText');
     const etaText = document.getElementById('etaText');
     const agreeBtn = document.getElementById('agreeBtn');
@@ -198,11 +215,11 @@
     const copyBtn = document.getElementById('copyChannel');
     const copyToast = document.getElementById('copyToast');
 
-    const channelItems = document.querySelectorAll('#channelList .rule');
-    const voiceItems = document.querySelectorAll('#voiceList .rule');
-    const extraItems = document.querySelectorAll('#extraList .rule');
+    const channelItems = Array.from(document.querySelectorAll('#channelList .rule'));
+    const voiceItems = Array.from(document.querySelectorAll('#voiceList .rule'));
+    const extraItems = Array.from(document.querySelectorAll('#extraList .rule'));
 
-    // confetti canvas
+    // confetti canvas + context
     const confettiCanvas = document.getElementById('confettiCanvas');
     const ctx = confettiCanvas.getContext && confettiCanvas.getContext('2d');
 
@@ -217,31 +234,44 @@
     resizeCanvas();
     addEventListener('resize', resizeCanvas);
 
-    // confetti particles
+    // confetti particle system
     let confettiParticles = [];
+    let confettiAnimating = false;
     function spawnConfetti(count=80){
-      confettiParticles = [];
-      for(let i=0;i<count;i++){
-        confettiParticles.push({
-          x: Math.random() * innerWidth,
-          y: -20 - Math.random() * 200,
-          vx: (Math.random() - 0.5) * 6,
-          vy: 1 + Math.random() * 4,
-          size: 6 + Math.random()*8,
-          color: ['#5865f2','#7cc0ff','#9b7bff','#ff7eb3','#ffd166'][Math.floor(Math.random()*5)],
-          rot: Math.random()*360,
-          rotSpeed: (Math.random()-0.5)*8,
-          life: 100 + Math.random()*80
-        });
+      if(!ctx) return;
+      // throttle bursts so we don't stack many heavy loops
+      if(confettiAnimating) {
+        // add small extra particles
+        for(let i=0;i<Math.min(30, Math.floor(count/3)); i++) pushParticle();
+        return;
       }
+      confettiParticles = [];
+      for(let i=0;i<count;i++) pushParticle();
+      confettiAnimating = true;
       confettiCanvas.style.opacity = 1;
       requestAnimationFrame(confettiLoop);
+      // safety clear flag after 3s
+      setTimeout(()=> confettiAnimating = false, 3000);
+    }
+    function pushParticle(){
+      confettiParticles.push({
+        x: Math.random() * innerWidth,
+        y: -10 - Math.random() * 160,
+        vx: (Math.random() - 0.5) * 6,
+        vy: 1 + Math.random() * 4,
+        size: 6 + Math.random()*8,
+        color: ['#5865f2','#7cc0ff','#9b7bff','#ff7eb3','#ffd166'][Math.floor(Math.random()*5)],
+        rot: Math.random()*360,
+        rotSpeed: (Math.random()-0.5)*8,
+        life: 120 + Math.random()*80
+      });
     }
     function confettiLoop(){
       if(!ctx) return;
       ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
-      confettiParticles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; p.vy += 0.03;
+      for (let i = confettiParticles.length - 1; i >= 0; i--) {
+        const p = confettiParticles[i];
+        p.x += p.vx; p.y += p.vy; p.vy += 0.02;
         p.rot += p.rotSpeed;
         p.life -= 1;
         ctx.save();
@@ -250,13 +280,13 @@
         ctx.fillStyle = p.color;
         ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.6);
         ctx.restore();
-        if(p.y > innerHeight + 50 || p.life <= 0) confettiParticles.splice(i,1);
-      });
+        if(p.y > innerHeight + 40 || p.life <= 0) confettiParticles.splice(i,1);
+      }
       if(confettiParticles.length) requestAnimationFrame(confettiLoop);
       else setTimeout(()=> confettiCanvas.style.opacity = 0, 220);
     }
 
-    // stages for loader
+    // STAGES and helper
     const STAGES = [
       {p: 4, text: 'Warming up UI…'},
       {p: 18, text: 'Preparing friendly rules…'},
@@ -265,129 +295,122 @@
       {p: 86, text: 'Finalizing animations…'},
       {p: 98, text: 'Complete'}
     ];
-
     function stageFor(p){
       for(let i=STAGES.length-1;i>=0;i--) if(p >= STAGES[i].p) return STAGES[i].text;
       return STAGES[0].text;
     }
 
-    // animate spinner stroke dash offset and progress inner smoothly using rAF
+    // progress loop (robust)
     let progress = 0; // 0..100
-    let target = 0;
-    let startTime = null;
-    let easing = t => (--t)*t*t+1; // easeOutCubic-like
-
-    // simulate target increment schedule, but keep it non-linear & unpredictable
+    let loaderStarted = null;
+    // non-linear timeline (ms -> percent)
     const schedule = [
       {t:0, v: 6},
-      {t:350, v: 18},
-      {t:700, v: 42},
-      {t:1100, v: 68},
-      {t:1400, v: 85},
-      {t:1700, v: 92},
-      {t:2200, v: 98}
-    ]; // ms timeline -> percent
-    let loaderStarted = performance.now();
+      {t:300, v: 16},
+      {t:700, v: 34},
+      {t:1150, v: 62},
+      {t:1500, v: 80},
+      {t:1800, v: 92},
+      {t:2300, v: 98}
+    ];
 
     function computeTarget(now){
-      const elapsed = now - loaderStarted;
+      const elapsed = Math.max(0, now - loaderStarted);
       for(let i=schedule.length-1;i>=0;i--) if(elapsed >= schedule[i].t) return schedule[i].v;
       return schedule[0].v;
     }
 
+    // smoother lerp rather than jittery steps
     function stepFrame(now){
-      if(!startTime) startTime = now;
-      // update target based on timeline
-      target = computeTarget(now);
-      // small random jitter to avoid mechanical motion
-      target += Math.random()*1.3;
+      if(!loaderStarted) loaderStarted = now;
+      const targetBase = computeTarget(now);
+      // dynamic small jitter for natural feeling (reduced for users who prefer reduced motion)
+      const jitter = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : Math.random() * 1.25;
+      const target = Math.min(100, targetBase + jitter);
 
-      // advance progress towards target with smoothing
-      const delta = (target - progress) * 0.12;
-      progress += Math.max(Math.min(delta, 6), -6); // clamp step
+      // approach target with an easing factor that depends on remaining distance
+      const easeFactor = 0.12 + (100 - progress) / 1200; // faster earlier, slower near the end
+      progress += (target - progress) * easeFactor;
+      // clamp and snap on near completion
+      if(progress > 99.7) progress = 100;
 
-      // ensure we don't overshoot
-      if(progress > 100) progress = 100;
-      progressInner.style.width = progress.toFixed(0) + '%';
-      progressInner.textContent = Math.round(progress) + '%';
-      document.querySelector('.progressInner').setAttribute('aria-valuenow', Math.round(progress));
+      const pct = Math.round(progress);
+      progressInner.style.width = pct + '%';
+      progressInner.textContent = pct + '%';
+      progressBar.setAttribute('aria-valuenow', pct);
 
-      // animate svg stroke (circle circumference 2πr ~ 276.46)
+      // update spinner stroke (circumference = 2πr where r=44)
       const circumference = 2 * Math.PI * 44;
-      const dash = circumference * (1 - progress / 100);
-      spinner.setAttribute('stroke-dashoffset', dash);
+      const dash = Math.max(0, circumference * (1 - progress / 100));
+      try{ spinner.setAttribute('stroke-dashoffset', dash.toFixed(2)); }catch(e){}
 
-      // update stage text & ETA
+      // ui bits
       stageText.textContent = stageFor(progress);
-      const approxRemaining = Math.max(0, ((98 - progress) / 20) * 0.9); // heuristic seconds
+      const approxRemaining = progress >= 98 ? 0 : Math.max(0, ((98 - progress) / 22)); // rough seconds
       etaText.textContent = (progress >= 98) ? 'Ready' : `ETA: ${approxRemaining.toFixed(1)}s`;
 
-      // reveal sections at thresholds
-      if(progress >= 20) reveal(channelItems, 0);
-      if(progress >= 55) reveal(voiceItems, 60);
-      if(progress >= 80) reveal(extraItems, 120);
+      // reveal items with nice stagger when crossing thresholds
+      if(progress >= 18) staggerReveal(channelItems, 40);
+      if(progress >= 55) staggerReveal(voiceItems, 48);
+      if(progress >= 80) staggerReveal(extraItems, 52);
 
-      // enable agree when reached ~99
-      if(progress >= 99){ agreeBtn.disabled = false; agreeBtn.removeAttribute('aria-disabled'); }
+      // enable agree near completion
+      if(progress >= 99 && agreeBtn.disabled){ agreeBtn.disabled = false; agreeBtn.removeAttribute('aria-disabled'); }
 
-      // continue animating until final stable state
-      if(progress < 100) requestAnimationFrame(stepFrame);
-      else {
-        // gracefully finish: settle to 100 and then hide overlay
-        progress = 100;
+      if(progress < 100) {
+        requestAnimationFrame(stepFrame);
+      } else {
+        // finalize and hide shortly
         progressInner.style.width = '100%';
         progressInner.textContent = '100%';
-        spinner.setAttribute('stroke-dashoffset', 0);
+        progressBar.setAttribute('aria-valuenow', 100);
         stageText.textContent = 'Ready';
         etaText.textContent = 'Ready';
-        setTimeout(() => hideLoader(), 260);
+        setTimeout(()=> hideLoader(), 280);
       }
     }
 
-    // reveal function with stagger
-    function reveal(list, delay){
+    // reveal helper with simple guarded stagger
+    function staggerReveal(list, delay){
       list.forEach((el,i) => {
-        if(!el.classList.contains('show')) setTimeout(()=>el.classList.add('show'), delay + i*55);
+        if(!el.classList.contains('show')) setTimeout(()=>el.classList.add('show'), delay + i*60);
       });
     }
 
-    // start animation loop
-    requestAnimationFrame(stepFrame);
-
-    // allow skip: jump immediately to complete and reveal everything
-    skipBtn.addEventListener('click', () => {
-      // set progress to 100 immediately, reveal content and enable agree
-      progress = 100; progressInner.style.width = '100%'; progressInner.textContent = '100%';
-      spinner.setAttribute('stroke-dashoffset', 0);
-      stageText.textContent = 'Skipped';
-      etaText.textContent = 'Ready';
-      agreeBtn.disabled = false; agreeBtn.removeAttribute('aria-disabled');
-      reveal(channelItems, 0); reveal(voiceItems, 60); reveal(extraItems, 120);
-      setTimeout(() => hideLoader(), 180);
-    });
-
-    // hide loader and show content
+    // hide loader and show content with entrance
     function hideLoader(){
       loaderWrap.style.opacity = 0;
       loaderWrap.style.visibility = 'hidden';
       mainContent.removeAttribute('aria-hidden');
-      mainContent.focus();
+      // small entrance animation for content
+      try { mainContent.animate([{opacity:0, transform:'translateY(6px)'},{opacity:1, transform:'none'}], {duration:360, easing:'cubic-bezier(.2,.9,.2,1)'}); } catch(e){}
+      mainContent.focus({preventScroll:true});
     }
 
-    // agree button behavior: confetti + store
+    // skip button: fast-forward to ready state
+    skipBtn.addEventListener('click', () => {
+      // stop any running loop by setting progress to 100 and finishing
+      progress = 100;
+      progressInner.style.width = '100%'; progressInner.textContent = '100%';
+      progressBar.setAttribute('aria-valuenow', 100);
+      try{ spinner.setAttribute('stroke-dashoffset', 0); }catch(e){}
+      stageText.textContent = 'Skipped';
+      etaText.textContent = 'Ready';
+      agreeBtn.disabled = false; agreeBtn.removeAttribute('aria-disabled');
+      // immediate reveal
+      staggerReveal(channelItems, 10); staggerReveal(voiceItems, 60); staggerReveal(extraItems, 120);
+      setTimeout(()=> hideLoader(), 180);
+    });
+
+    // Agree behavior: store & confetti
     agreeBtn.addEventListener('click', () => {
       if(agreeBtn.disabled) return;
       agreeBtn.textContent = 'Accepted ✓';
       agreeBtn.disabled = true;
       localStorage.setItem('serverRulesAccepted','true');
-
-      // small click animation
-      agreeBtn.animate([{transform:'scale(1)'},{transform:'scale(.96)'}],{duration:160,fill:'forwards',easing:'ease-out'});
-      // confetti
+      try{ agreeBtn.animate([{transform:'scale(1)'},{transform:'scale(.96)'}], {duration:160, fill:'forwards'}); }catch(e){}
       spawnConfetti(90);
-      // hide loader if visible
       hideLoader();
-      // toast
       showToast('Thanks — rules accepted!');
     });
 
@@ -408,90 +431,72 @@
       grab('Extra Rules','#extraList');
       return out.join('\n');
     }
-
     copyBtn.addEventListener('click', async ()=>{
       const txt = collectRulesText();
       try{
         await navigator.clipboard.writeText(txt);
         showToast('Rules copied to clipboard');
       }catch(e){
-        // fallback
         const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
         try{ document.execCommand('copy'); showToast('Rules copied to clipboard'); } catch(e2){ showToast('Copy failed'); }
         ta.remove();
       }
     });
 
-    // small toast helper
+    // toast
     function showToast(msg){
       copyToast.textContent = msg;
       copyToast.classList.add('show');
       setTimeout(()=> copyToast.classList.remove('show'), 1600);
     }
 
-    /*****************
-     * Confetti helpers
-     *****************/
-    let confettiAnimating = false;
-    function spawnConfetti(count=60){
-      if(!ctx) return;
-      if(confettiAnimating) return;
-      confettiAnimating = true;
-      // create particles and animate using separate loop (already implemented above)
-      // call spawnConfetti from above declaration (it fills confettiParticles etc)
-      // small delay to show canvas
-      confettiCanvas.style.opacity = 1;
-      // reuse function defined earlier: spawnConfetti (renamed to spawnConfetti earlier)
-      // but to avoid confusion, call the earlier spawnConfetti function declared above
-      // We'll re-use the external one by referencing global function name spawnConfetti
-      // (This function was defined above in the same script block.)
-      // So call the earlier one:
-      // _Note_: In this file, spawnConfetti is already defined earlier; calling it here is fine.
-      // The earlier function will set confettiParticles and start loop.
-      window.spawnConfetti && window.spawnConfetti(count);
-      // reset flag after some time
-      setTimeout(()=> confettiAnimating = false, 1500);
-    }
-
-    // If user already accepted previously, skip quickly
+    // if user already accepted previously => skip loader quickly
     try{
       if(localStorage.getItem('serverRulesAccepted') === 'true'){
-        // fast-forward: set progress to 100 and reveal
+        // reveal everything and hide loader immediately
         progress = 100;
-        progressInner.style.width = '100%'; progressInner.textContent = '100%';
-        spinner.setAttribute('stroke-dashoffset', 0);
+        progressInner.style.width = '100%';
+        progressInner.textContent = '100%';
+        progressBar.setAttribute('aria-valuenow', 100);
+        try{ spinner.setAttribute('stroke-dashoffset', 0); }catch(e){}
         stageText.textContent = 'Previously accepted';
         etaText.textContent = 'Ready';
-        reveal(channelItems, 20); reveal(voiceItems,80); reveal(extraItems,140);
-        setTimeout(()=> hideLoader(), 220);
+        staggerReveal(channelItems, 10); staggerReveal(voiceItems, 40); staggerReveal(extraItems, 60);
+        setTimeout(()=> hideLoader(), 160);
+      } else {
+        // start the progress animation loop
+        requestAnimationFrame(stepFrame);
+        // safety fallback: if something stalls, finish after 6s
+        setTimeout(()=>{
+          if(progress < 100){
+            progress = 100;
+            progressInner.style.width = '100%'; progressInner.textContent = '100%';
+            progressBar.setAttribute('aria-valuenow', 100);
+            try{ spinner.setAttribute('stroke-dashoffset', 0); }catch(e){}
+            stageText.textContent = 'Timeout — ready';
+            etaText.textContent = 'Ready';
+            agreeBtn.disabled = false; agreeBtn.removeAttribute('aria-disabled');
+            staggerReveal(channelItems, 0); staggerReveal(voiceItems,60); staggerReveal(extraItems,120);
+            setTimeout(()=> hideLoader(), 260);
+          }
+        }, 6000);
       }
-    }catch(e){ /* ignore localStorage errors */ }
+    }catch(e){ /* ignore localStorage */ }
 
-    // accessibility: allow Enter on Agree
+    // accessibility: allow Enter on Agree while focused
     agreeBtn.addEventListener('keydown', (e)=> { if(e.key === 'Enter' && !agreeBtn.disabled) agreeBtn.click(); });
 
-    // expose spawnConfetti to window so inner function can call it (declared earlier)
-    window.spawnConfetti = spawnConfetti;
-
-    // ensure spinner initial stroke-dasharray is correct (in case of CSS scaling)
+    // ensure spinner stroke-dasharray correct (circumference of circle r=44)
     (function setSpinnerDash(){
       const circumference = 2 * Math.PI * 44;
-      spinner.setAttribute('stroke-dasharray', circumference.toFixed(2));
-      spinner.setAttribute('stroke-dashoffset', circumference.toFixed(2));
+      try{
+        spinner.setAttribute('stroke-dasharray', circumference.toFixed(2));
+        spinner.setAttribute('stroke-dashoffset', circumference.toFixed(2));
+      }catch(e){}
     })();
 
-    // Small safety: if requestAnimationFrame loop stalls, ensure loader completes after 6s
-    setTimeout(()=>{
-      if(progress < 100){
-        progress = 100; progressInner.style.width = '100%'; progressInner.textContent = '100%';
-        spinner.setAttribute('stroke-dashoffset', 0);
-        stageText.textContent = 'Timeout — ready';
-        etaText.textContent = 'Ready';
-        reveal(channelItems, 0); reveal(voiceItems,60); reveal(extraItems,120);
-        agreeBtn.disabled = false; agreeBtn.removeAttribute('aria-disabled');
-        setTimeout(()=> hideLoader(), 260);
-      }
-    }, 6000);
+    // expose spawnConfetti to window (if other things want to trigger it)
+    window.spawnConfetti = spawnConfetti;
   </script>
 </body>
 </html>
