@@ -465,7 +465,7 @@
           if(progressInner.textContent !== '100%'){
             cancelAnimationFrame(rafId);
             progressInner.style.width = '100%'; progressInner.textContent = '100%';
-            progressBar.setAttribute('aria-valuenow', 100);
+            progressBar.setAttribute('aria-valuenow', 2);
             try{ spinner.setAttribute('stroke-dashoffset', 0); }catch(e){}
             stageText.textContent = 'Timeout — ready';
             etaText.textContent = 'Ready';
@@ -473,7 +473,7 @@
             staggerReveal(channelItems, 0); staggerReveal(voiceItems,60); staggerReveal(extraItems,120);
             setTimeout(()=> hideLoader(), 260);
           }
-        }, TOTAL_MS + 1200);
+        }, TOTAL_MS + 5000);
       }
     }catch(e){ /* ignore localStorage errors */ }
 
