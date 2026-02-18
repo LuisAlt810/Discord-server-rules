@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <title>Server Rules — Update v3 (Fixed)</title>
+  <title>Server Rules — Update v4 (Fixed)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root{
@@ -15,6 +15,7 @@
       --muted: #9aa0aa;
       --glass: rgba(255,255,255,0.02);
       --radius: 14px;
+      --rule-accent: linear-gradient(90deg, rgba(88,101,242,0.12), rgba(124,192,255,0.08));
     }
     *{box-sizing:border-box;font-family:"Segoe UI",system-ui,-apple-system,SegoeUIEmoji,Helvetica,Arial;}
     html,body{height:100%;margin:0;background:
@@ -63,26 +64,33 @@
 
     /* neon progress bar */
     .progressOuter{margin-top:16px;background:rgba(255,255,255,0.03);height:14px;border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.02)}
-    #progressInner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent-a),var(--accent-b),var(--accent-c));box-shadow:0 8px 30px rgba(88,101,242,0.14);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;letter-spacing:.6px;transition:width .28s cubic-bezier(.2,.9,.2,1)}
+    #progressInner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent-a),var(--accent-b),var(--accent-c));box-shadow:0 8px 30px rgba(88,101,242,0.14);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;letter-spacing:.6px;transition:width .18s linear}
     .loader-meta{display:flex;justify-content:space-between;margin-top:10px;color:var(--muted);font-size:.88rem}
     .loader-actions{display:flex;gap:10px;margin-top:14px;justify-content:center}
-    .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text);cursor:pointer;font-weight:700;min-width:96px}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text);cursor:pointer;font-weight:700;min-width:96px;transition:transform .12s ease,opacity .12s}
     .btn.primary{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));box-shadow:0 10px 30px rgba(88,101,242,0.14);border:none}
+    .btn:hover{transform:translateY(-2px)}
     .btn[disabled]{opacity:.5;cursor:not-allowed;transform:none}
 
     /* main content cards */
-    .rules-card{background:var(--card);border-radius:12px;padding:18px;margin-bottom:18px;box-shadow:0 14px 40px rgba(0,0,0,.45);border:1px solid rgba(255,255,255,0.02)}
-    .rules-title{color:var(--accent-a);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+    .rules-card{background:var(--card);border-radius:12px;padding:18px;margin-bottom:18px;box-shadow:0 14px 40px rgba(0,0,0,.45);border:1px solid rgba(255,255,255,0.02);transition:transform .18s ease,box-shadow .18s ease}
+    .rules-card:hover{transform:translateY(-6px);box-shadow:0 22px 60px rgba(0,0,0,.55)}
+    .rules-title{color:var(--accent-a);font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:12px}
     ul{padding:0;margin:0;list-style:none}
     .rule{
-      display:flex;gap:12px;padding:10px;border-radius:10px;background:rgba(255,255,255,0.015);margin-bottom:8px;
+      display:flex;gap:12px;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.007));margin-bottom:8px;
       opacity:0; transform:translateY(10px) scale(.995); transition:opacity .44s cubic-bezier(.2,.95,.2,1), transform .44s cubic-bezier(.2,.95,.2,1);
       will-change:opacity, transform;
+      border-left:4px solid transparent;
     }
+    .rule:hover{border-left-color:rgba(124,192,255,0.18)}
     .rule.show{opacity:1;transform:none}
     .emoji{width:36px;height:36px;display:grid;place-items:center;font-size:1.2rem}
-    .rule-title{font-weight:700}
+    .rule-title{font-weight:800}
     .rule-desc{color:var(--muted);font-size:.94rem;margin-top:4px}
+
+    /* little badges for tips */
+    .badge{display:inline-block;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.02);color:var(--muted);font-weight:700;font-size:.78rem;margin-left:8px}
 
     footer{color:var(--muted);text-align:center;margin-top:18px}
 
@@ -108,7 +116,7 @@
   <div class="orb o1" aria-hidden="true"></div>
   <div class="orb o2" aria-hidden="true"></div>
 
-  <!-- Loader overlay -->
+  <!-- Loader overlay (fixed 10s unless skipped) -->
   <div id="loaderWrap" role="status" aria-live="polite" aria-label="Loading rules overlay">
     <div class="loaderCard" role="dialog" aria-modal="true" aria-label="Loading rules">
       <div class="loader-top">
@@ -130,7 +138,7 @@
 
         <div class="loader-text">
           <h2 id="loaderTitle">Preparing the server rules…</h2>
-          <p id="loaderSubtitle">We make this quick and friendly — press Skip to jump ahead.</p>
+          <p id="loaderSubtitle">We polish the copy & animations. You’ll be able to accept when it finishes.</p>
 
           <div id="progressBar" class="progressOuter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Loading progress">
             <div id="progressInner">0%</div>
@@ -138,7 +146,7 @@
 
           <div class="loader-meta">
             <div id="stageText">Initializing</div>
-            <div id="etaText">ETA: —</div>
+            <div id="etaText">ETA: 10.0s</div>
           </div>
         </div>
       </div>
@@ -161,13 +169,15 @@
 
     <!-- Channel rules -->
     <div class="rules-card" aria-labelledby="chTitle">
-      <div id="chTitle" class="rules-title">📜 Channel Rules</div>
+      <div id="chTitle" class="rules-title">📜 Channel Rules <span class="badge">Be cool</span></div>
       <ul id="channelList">
         <li class="rule"><div class="emoji">🤝</div><div><div class="rule-title">Be Respectful</div><div class="rule-desc">No harassment, hateful language, or targeted attacks. Disagree without being a jerk.</div></div></li>
-        <li class="rule"><div class="emoji">🔇</div><div><div class="rule-title">No Spamming</div><div class="rule-desc">No rapid messages, repeated images, or excessive emoji.</div></div></li>
-        <li class="rule"><div class="emoji">📌</div><div><div class="rule-title">Use the Right Channel</div><div class="rule-desc">Read channel topics; memes go in #memes, help in #support, etc.</div></div></li>
-        <li class="rule"><div class="emoji">🚫</div><div><div class="rule-title">No NSFW</div><div class="rule-desc">Sexual or graphic content is not allowed anywhere here.</div></div></li>
-        <li class="rule"><div class="emoji">📢</div><div><div class="rule-title">No Advertising</div><div class="rule-desc">Unsolicited server drops or DM ads are not permitted — ask staff for rules.</div></div></li>
+        <li class="rule"><div class="emoji">🔇</div><div><div class="rule-title">No Spamming</div><div class="rule-desc">No rapid messages, repeated images, or excessive emoji. Threads for long chats.</div></div></li>
+        <li class="rule"><div class="emoji">📌</div><div><div class="rule-title">Use the Right Channel</div><div class="rule-desc">Read channel topics: memes ➜ #memes, help ➜ #support, art ➜ #showcase.</div></div></li>
+        <li class="rule"><div class="emoji">🚫</div><div><div class="rule-title">No NSFW / Illegal Content</div><div class="rule-desc">Sexual, graphic, or illegal content is not allowed anywhere here.</div></div></li>
+        <li class="rule"><div class="emoji">📢</div><div><div class="rule-title">No Unsolicited Advertising</div><div class="rule-desc">No server drops or DM ads. Ask staff if you want to promote something.</div></div></li>
+        <li class="rule"><div class="emoji">⚠️</div><div><div class="rule-title">No Self-Harm Encouragement</div><div class="rule-desc">Content that encourages self-harm is not allowed — seek help and contact mods if you see it.</div></div></li>
+        <li class="rule"><div class="emoji">🔍</div><div><div class="rule-title">Spoiler Etiquette</div><div class="rule-desc">Use spoiler tags for plot points and major reveals — be considerate.</div></div></li>
       </ul>
       <div style="display:flex;justify-content:flex-end;margin-top:10px">
         <button id="copyChannel" class="btn">Copy rules</button>
@@ -176,21 +186,22 @@
 
     <!-- Voice rules -->
     <div class="rules-card" aria-labelledby="vcTitle">
-      <div id="vcTitle" class="rules-title">🎧 Voice Chat Rules</div>
+      <div id="vcTitle" class="rules-title">🎧 Voice Chat Rules <span class="badge">Keep it chill</span></div>
       <ul id="voiceList">
         <li class="rule"><div class="emoji">🎙️</div><div><div class="rule-title">Push-to-Talk or Mute</div><div class="rule-desc">Keep background noise low and mute when away.</div></div></li>
-        <li class="rule"><div class="emoji">🔊</div><div><div class="rule-title">Respect Volume</div><div class="rule-desc">No ear-rape or sudden loud audio.</div></div></li>
-        <li class="rule"><div class="emoji">🎥</div><div><div class="rule-title">No Recording Without Consent</div><div class="rule-desc">Always ask before recording voice/video.</div></div></li>
+        <li class="rule"><div class="emoji">🔊</div><div><div class="rule-title">Respect Volume</div><div class="rule-desc">No ear-rape or sudden loud audio; check your mic before joining.</div></div></li>
+        <li class="rule"><div class="emoji">🎥</div><div><div class="rule-title">Ask Before Recording</div><div class="rule-desc">Always get consent before recording or streaming others.</div></div></li>
       </ul>
     </div>
 
     <!-- Extra rules -->
     <div class="rules-card" aria-labelledby="exTitle">
-      <div id="exTitle" class="rules-title">🌟 Extra Rules</div>
+      <div id="exTitle" class="rules-title">🌟 Extra Rules <span class="badge">Community first</span></div>
       <ul id="extraList">
-        <li class="rule"><div class="emoji">❤️</div><div><div class="rule-title">Be Kind</div><div class="rule-desc">Small kindnesses matter. No microaggressions.</div></div></li>
-        <li class="rule"><div class="emoji">🔒</div><div><div class="rule-title">Protect Privacy</div><div class="rule-desc">No doxxing or posting private info without consent.</div></div></li>
-        <li class="rule"><div class="emoji">👑</div><div><div class="rule-title">Respect Staff</div><div class="rule-desc">If staff asks something, comply or appeal privately.</div></div></li>
+        <li class="rule"><div class="emoji">❤️</div><div><div class="rule-title">Be Kind</div><div class="rule-desc">Small kindnesses matter. Avoid microaggressions and gatekeeping.</div></div></li>
+        <li class="rule"><div class="emoji">🔒</div><div><div class="rule-title">Protect Privacy</div><div class="rule-desc">No doxxing or sharing private info without consent.</div></div></li>
+        <li class="rule"><div class="emoji">👑</div><div><div class="rule-title">Respect Staff</div><div class="rule-desc">If staff asks something, comply or appeal privately. Abuse of staff is not tolerated.</div></div></li>
+        <li class="rule"><div class="emoji">🧭</div><div><div class="rule-title">Follow Discord TOS</div><div class="rule-desc">We follow Discord's Terms of Service — violations may result in removal.</div></div></li>
       </ul>
     </div>
 
@@ -201,7 +212,7 @@
 
   <script>
     /*****************
-     * Smooth loader (fixed & improved)
+     * Fixed 10s loader + polished rules reveal
      *****************/
     const loaderWrap = document.getElementById('loaderWrap');
     const spinner = document.getElementById('spinner'); // svg circle
@@ -234,14 +245,12 @@
     resizeCanvas();
     addEventListener('resize', resizeCanvas);
 
-    // confetti particle system
+    // confetti particle system (same as before)
     let confettiParticles = [];
     let confettiAnimating = false;
     function spawnConfetti(count=80){
       if(!ctx) return;
-      // throttle bursts so we don't stack many heavy loops
       if(confettiAnimating) {
-        // add small extra particles
         for(let i=0;i<Math.min(30, Math.floor(count/3)); i++) pushParticle();
         return;
       }
@@ -250,7 +259,6 @@
       confettiAnimating = true;
       confettiCanvas.style.opacity = 1;
       requestAnimationFrame(confettiLoop);
-      // safety clear flag after 3s
       setTimeout(()=> confettiAnimating = false, 3000);
     }
     function pushParticle(){
@@ -286,123 +294,111 @@
       else setTimeout(()=> confettiCanvas.style.opacity = 0, 220);
     }
 
-    // STAGES and helper
+    // stages mapped to ranges (used for friendly messages)
     const STAGES = [
-      {p: 4, text: 'Warming up UI…'},
-      {p: 18, text: 'Preparing friendly rules…'},
-      {p: 40, text: 'Applying consistency checks…'},
-      {p: 62, text: 'Polishing wording & examples…'},
-      {p: 86, text: 'Finalizing animations…'},
-      {p: 98, text: 'Complete'}
+      {p: 0, text: 'Warming up UI…'},
+      {p: 12, text: 'Loading friendly rules…'},
+      {p: 35, text: 'Checking channel structure…'},
+      {p: 60, text: 'Applying wording polish…'},
+      {p: 82, text: 'Rendering animations…'},
+      {p: 98, text: 'Wrapping up…'}
     ];
     function stageFor(p){
       for(let i=STAGES.length-1;i>=0;i--) if(p >= STAGES[i].p) return STAGES[i].text;
       return STAGES[0].text;
     }
 
-    // progress loop (robust)
-    let progress = 0; // 0..100
+    // fixed duration in ms
+    const TOTAL_MS = 10000; // 10 seconds exact
     let loaderStarted = null;
-    // non-linear timeline (ms -> percent)
-    const schedule = [
-      {t:0, v: 6},
-      {t:300, v: 16},
-      {t:700, v: 34},
-      {t:1150, v: 62},
-      {t:1500, v: 80},
-      {t:1800, v: 92},
-      {t:2300, v: 98}
-    ];
+    let rafId = null;
 
-    function computeTarget(now){
-      const elapsed = Math.max(0, now - loaderStarted);
-      for(let i=schedule.length-1;i>=0;i--) if(elapsed >= schedule[i].t) return schedule[i].v;
-      return schedule[0].v;
-    }
-
-    // smoother lerp rather than jittery steps
+    // step frame computes exact progress = elapsed / TOTAL_MS * 100 (clamped)
     function stepFrame(now){
       if(!loaderStarted) loaderStarted = now;
-      const targetBase = computeTarget(now);
-      // dynamic small jitter for natural feeling (reduced for users who prefer reduced motion)
-      const jitter = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : Math.random() * 1.25;
-      const target = Math.min(100, targetBase + jitter);
+      const elapsed = now - loaderStarted;
+      const raw = Math.max(0, Math.min(1, elapsed / TOTAL_MS));
+      // easing for natural feel (easeOutCubic)
+      const eased = 1 - Math.pow(1 - raw, 3);
+      const progress = Math.min(100, Math.round(eased * 10000) / 100); // two decimals
+      const pctDisplay = Math.round(progress);
 
-      // approach target with an easing factor that depends on remaining distance
-      const easeFactor = 0.12 + (100 - progress) / 1200; // faster earlier, slower near the end
-      progress += (target - progress) * easeFactor;
-      // clamp and snap on near completion
-      if(progress > 99.7) progress = 100;
+      progressInner.style.width = pctDisplay + '%';
+      progressInner.textContent = pctDisplay + '%';
+      progressBar.setAttribute('aria-valuenow', pctDisplay);
 
-      const pct = Math.round(progress);
-      progressInner.style.width = pct + '%';
-      progressInner.textContent = pct + '%';
-      progressBar.setAttribute('aria-valuenow', pct);
-
-      // update spinner stroke (circumference = 2πr where r=44)
+      // spinner
       const circumference = 2 * Math.PI * 44;
       const dash = Math.max(0, circumference * (1 - progress / 100));
       try{ spinner.setAttribute('stroke-dashoffset', dash.toFixed(2)); }catch(e){}
 
-      // ui bits
+      // UI bits
       stageText.textContent = stageFor(progress);
-      const approxRemaining = progress >= 98 ? 0 : Math.max(0, ((98 - progress) / 22)); // rough seconds
-      etaText.textContent = (progress >= 98) ? 'Ready' : `ETA: ${approxRemaining.toFixed(1)}s`;
+      const remaining = Math.max(0, (TOTAL_MS - elapsed) / 1000);
+      etaText.textContent = (progress >= 99.9) ? 'Ready' : `ETA: ${remaining.toFixed(1)}s`;
 
-      // reveal items with nice stagger when crossing thresholds
+      // reveal items at fixed thresholds
       if(progress >= 18) staggerReveal(channelItems, 40);
-      if(progress >= 55) staggerReveal(voiceItems, 48);
-      if(progress >= 80) staggerReveal(extraItems, 52);
+      if(progress >= 50) staggerReveal(voiceItems, 48);
+      if(progress >= 78) staggerReveal(extraItems, 52);
 
-      // enable agree near completion
-      if(progress >= 99 && agreeBtn.disabled){ agreeBtn.disabled = false; agreeBtn.removeAttribute('aria-disabled'); }
-
-      if(progress < 100) {
-        requestAnimationFrame(stepFrame);
-      } else {
-        // finalize and hide shortly
+      // enable agree at completion (or earlier if skipped)
+      if(progress >= 100 && !agreeBtn.disabled){
+        // nothing
+      }
+      if(progress >= 100){
+        // finalize
         progressInner.style.width = '100%';
         progressInner.textContent = '100%';
         progressBar.setAttribute('aria-valuenow', 100);
         stageText.textContent = 'Ready';
         etaText.textContent = 'Ready';
-        setTimeout(()=> hideLoader(), 280);
+        agreeBtn.disabled = false; agreeBtn.removeAttribute('aria-disabled');
+        // small pause so user sees 100%
+        setTimeout(()=> finalizeHide(), 260);
+        cancelAnimationFrame(rafId);
+        return;
       }
+      rafId = requestAnimationFrame(stepFrame);
     }
 
-    // reveal helper with simple guarded stagger
     function staggerReveal(list, delay){
       list.forEach((el,i) => {
         if(!el.classList.contains('show')) setTimeout(()=>el.classList.add('show'), delay + i*60);
       });
     }
 
-    // hide loader and show content with entrance
+    function finalizeHide(){
+      // keep overlay visible until user clicks agree, unless they skip
+      // if they already accepted previously, hide immediately
+      if(localStorage.getItem('serverRulesAccepted') === 'true'){
+        hideLoader();
+      }
+    }
+
     function hideLoader(){
       loaderWrap.style.opacity = 0;
       loaderWrap.style.visibility = 'hidden';
       mainContent.removeAttribute('aria-hidden');
-      // small entrance animation for content
       try { mainContent.animate([{opacity:0, transform:'translateY(6px)'},{opacity:1, transform:'none'}], {duration:360, easing:'cubic-bezier(.2,.9,.2,1)'}); } catch(e){}
       mainContent.focus({preventScroll:true});
     }
 
-    // skip button: fast-forward to ready state
+    // skip: finish now and allow agree
     skipBtn.addEventListener('click', () => {
-      // stop any running loop by setting progress to 100 and finishing
-      progress = 100;
+      cancelAnimationFrame(rafId);
+      // jump to finished state
       progressInner.style.width = '100%'; progressInner.textContent = '100%';
       progressBar.setAttribute('aria-valuenow', 100);
       try{ spinner.setAttribute('stroke-dashoffset', 0); }catch(e){}
       stageText.textContent = 'Skipped';
       etaText.textContent = 'Ready';
       agreeBtn.disabled = false; agreeBtn.removeAttribute('aria-disabled');
-      // immediate reveal
       staggerReveal(channelItems, 10); staggerReveal(voiceItems, 60); staggerReveal(extraItems, 120);
       setTimeout(()=> hideLoader(), 180);
     });
 
-    // Agree behavior: store & confetti
+    // Agree: accept & confetti
     agreeBtn.addEventListener('click', () => {
       if(agreeBtn.disabled) return;
       agreeBtn.textContent = 'Accepted ✓';
@@ -414,7 +410,7 @@
       showToast('Thanks — rules accepted!');
     });
 
-    // copy rules function
+    // copy rules (unchanged)
     function collectRulesText(){
       const out = [];
       function grab(listName, selector){
@@ -443,18 +439,15 @@
       }
     });
 
-    // toast
     function showToast(msg){
       copyToast.textContent = msg;
       copyToast.classList.add('show');
       setTimeout(()=> copyToast.classList.remove('show'), 1600);
     }
 
-    // if user already accepted previously => skip loader quickly
+    // If user already accepted, skip loader quickly
     try{
       if(localStorage.getItem('serverRulesAccepted') === 'true'){
-        // reveal everything and hide loader immediately
-        progress = 100;
         progressInner.style.width = '100%';
         progressInner.textContent = '100%';
         progressBar.setAttribute('aria-valuenow', 100);
@@ -464,12 +457,13 @@
         staggerReveal(channelItems, 10); staggerReveal(voiceItems, 40); staggerReveal(extraItems, 60);
         setTimeout(()=> hideLoader(), 160);
       } else {
-        // start the progress animation loop
-        requestAnimationFrame(stepFrame);
-        // safety fallback: if something stalls, finish after 6s
+        // start the 10s loader
+        loaderStarted = null;
+        rafId = requestAnimationFrame(stepFrame);
+        // safety fallback: force finish after TOTAL_MS + 1200ms
         setTimeout(()=>{
-          if(progress < 100){
-            progress = 100;
+          if(progressInner.textContent !== '100%'){
+            cancelAnimationFrame(rafId);
             progressInner.style.width = '100%'; progressInner.textContent = '100%';
             progressBar.setAttribute('aria-valuenow', 100);
             try{ spinner.setAttribute('stroke-dashoffset', 0); }catch(e){}
@@ -479,11 +473,11 @@
             staggerReveal(channelItems, 0); staggerReveal(voiceItems,60); staggerReveal(extraItems,120);
             setTimeout(()=> hideLoader(), 260);
           }
-        }, 6000);
+        }, TOTAL_MS + 1200);
       }
-    }catch(e){ /* ignore localStorage */ }
+    }catch(e){ /* ignore localStorage errors */ }
 
-    // accessibility: allow Enter on Agree while focused
+    // accessibility: Enter on Agree
     agreeBtn.addEventListener('keydown', (e)=> { if(e.key === 'Enter' && !agreeBtn.disabled) agreeBtn.click(); });
 
     // ensure spinner stroke-dasharray correct (circumference of circle r=44)
@@ -495,7 +489,6 @@
       }catch(e){}
     })();
 
-    // expose spawnConfetti to window (if other things want to trigger it)
     window.spawnConfetti = spawnConfetti;
   </script>
 </body>
