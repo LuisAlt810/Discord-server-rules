@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <title>Server Rules — Update v4 (Fixed)</title>
+  <title>Server Rules — Update v5 (Fixed 0.4)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root{
@@ -356,14 +356,14 @@
       try{ spinner.setAttribute('stroke-dashoffset', dash.toFixed(2)); }catch(e){}
 
       stageText.textContent = stageFor(pctDisplay);
-      const remaining = Math.max(0, (TOTAL_MS - elapsed) / 1000);
+      const remaining = Math.max(0, (TOTAL_MS - elapsed) / 5000);
       etaText.textContent = (pctDisplay >= 100) ? 'Ready' : `ETA: ${remaining.toFixed(1)}s`;
 
       // Finish loading
       if(pctDisplay >= 100){
         progressInner.style.width = '100%';
         progressInner.textContent = '100%';
-        progressBar.setAttribute('aria-valuenow', 100);
+        progressBar.setAttribute('aria-valuenow', 1);
         stageText.textContent = 'Ready';
         etaText.textContent = 'Ready';
         
