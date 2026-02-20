@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <title>Server Rules — Update v5 (Fixed 0.4)</title>
+  <title>Server Rules — Update v5 (Fixed 0.5)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root{
@@ -34,7 +34,7 @@
     .container{max-width:980px;margin:36px auto;position:relative;z-index:2;padding:0 18px;}
 
     /* Header */
-    .headline{text-align:center;margin-bottom:20px}
+    .headline{text-align:center;margin-bottom:20px;display:flex;flex-direction:column;align-items:center;}
     h1{font-size:2.4rem;margin:0;background:linear-gradient(90deg,var(--accent-a),var(--accent-b),var(--accent-c));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;animation:glow 3s ease-in-out infinite}
     .subtitle{color:var(--muted);margin-top:8px;display:block}
 
@@ -64,7 +64,7 @@
 
     /* neon progress bar */
     .progressOuter{margin-top:16px;background:rgba(255,255,255,0.02);height:14px;border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.03);position:relative}
-    #progressInner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent-a),var(--accent-b),var(--accent-c));box-shadow:0 10px 40px rgba(88,101,242,0.12);display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;letter-spacing:.6px;transition:width .08s steps(1, end)}
+    #progressInner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent-a),var(--accent-b),var(--accent-c));box-shadow:0 10px 40px rgba(88,101,242,0.12);display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;letter-spacing:.6px;transition:width .08s linear}
     /* add subtle glow */
     #progressInner::after{content:"";position:absolute;inset:0;filter:blur(10px);opacity:0.28;pointer-events:none}
     .loader-meta{display:flex;justify-content:space-between;margin-top:10px;color:var(--muted);font-size:.88rem}
@@ -102,6 +102,9 @@
     /* small toast */
     .toast{position:fixed;right:18px;bottom:18px;background:rgba(0,0,0,0.6);color:#fff;padding:10px 12px;border-radius:10px;font-weight:700;transform:translateY(8px);opacity:0;transition:all .28s ease;z-index:13000}
     .toast.show{opacity:1;transform:none}
+
+    /* controls row in header */
+    .header-controls{display:flex;gap:8px;margin-top:12px}
 
     /* reduced motion */
     @media (prefers-reduced-motion: reduce){
@@ -146,13 +149,23 @@
 
           <div class="loader-meta">
             <div id="stageText">Initializing</div>
-            <div id="etaText">ETA: 8.0s</div>
+            <div id="etaText">ETA: 2.5s</div>
           </div>
         </div>
       </div>
 
       <div class="loader-actions" style="margin-top:14px">
-        <button id="skipBtn" class="btn" aria-label="Skip loading">Skip Loading</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button id="skipBtn" class="btn" aria-label="Skip loading">Skip Loading</button>
+          <button id="disableBtn" class="btn" aria-label="Disable loader">Disable loader</button>
+        </div>
+        <div style="margin-left:8px;display:flex;align-items:center">
+          <span style="color:var(--muted);font-weight:700;margin-left:12px">Language:</span>
+          <div style="margin-left:8px;display:flex;gap:6px">
+            <button id="langEn" class="btn" aria-label="English (EN)">EN</button>
+            <button id="langDe" class="btn" aria-label="German (DE)">DE</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -161,12 +174,15 @@
 
   <div class="container" id="mainContent" aria-hidden="true" tabindex="-1">
     <div class="headline">
-      <h1>📜 Server Rules</h1>
-      <span class="subtitle">Clear, fair, and made to keep the community fun.</span>
+      <h1 id="mainTitle">📜 Server Rules</h1>
+      <span id="mainSubtitle" class="subtitle">Clear, fair, and made to keep the community fun.</span>
+      <div class="header-controls" aria-hidden="false" id="headerControls">
+        <!-- extra buttons injected by JS if needed -->
+      </div>
     </div>
 
     <div class="rules-card" aria-labelledby="chTitle">
-      <div id="chTitle" class="rules-title">📜 Channel Rules <span class="badge">Be cool</span></div>
+      <div id="chTitle" class="rules-title">📜 Channel Rules <span class="badge" id="badgeChannel">Be cool</span></div>
       <ul id="channelList">
         <li class="rule"><div class="emoji">🤝</div><div><div class="rule-title">Be Respectful</div><div class="rule-desc">No harassment, hateful language, or targeted attacks. Disagree without being a jerk.</div></div></li>
         <li class="rule"><div class="emoji">🔇</div><div><div class="rule-title">No Spamming</div><div class="rule-desc">No rapid messages, repeated images, or excessive emoji. Threads for long chats.</div></div></li>
@@ -204,15 +220,19 @@
       <button id="agreeBtn" class="btn primary" aria-label="Agree and continue">Agree & Continue</button>
     </div>
 
-    <footer>© 2026 • Press <strong>Agree & Continue</strong> to accept these rules.</footer>
+    <footer id="pageFooter">© 2026 • Press <strong>Agree & Continue</strong> to accept these rules.</footer>
   </div>
 
   <div id="copyToast" class="toast" role="status" aria-live="polite">Copied</div>
 
   <script>
     /*****************
-     * Discrete 1% -> 100% loader, 8 seconds total
+     * Enhanced loader + language toggle
      *****************/
+    const urlParams = new URLSearchParams(location.search);
+    const requestedLang = urlParams.get('languages') || urlParams.get('lang') || '';
+    const LANG_KEY = 'serverRulesLang';
+    const SKIP_KEY = 'skipServerRulesLoader';
     const loaderWrap = document.getElementById('loaderWrap');
     const spinner = document.getElementById('spinner'); // svg circle
     const progressInner = document.getElementById('progressInner');
@@ -221,9 +241,13 @@
     const etaText = document.getElementById('etaText');
     const agreeBtn = document.getElementById('agreeBtn');
     const skipBtn = document.getElementById('skipBtn');
+    const disableBtn = document.getElementById('disableBtn');
     const mainContent = document.getElementById('mainContent');
     const copyBtn = document.getElementById('copyChannel');
     const copyToast = document.getElementById('copyToast');
+    const mainTitle = document.getElementById('mainTitle');
+    const mainSubtitle = document.getElementById('mainSubtitle');
+    const pageFooter = document.getElementById('pageFooter');
 
     const channelItems = Array.from(document.querySelectorAll('#channelList .rule'));
     const voiceItems = Array.from(document.querySelectorAll('#voiceList .rule'));
@@ -293,20 +317,123 @@
       else setTimeout(()=> confettiCanvas.style.opacity = 0, 220);
     }
 
-    const STAGES = [
-      {p: 0, text: 'Warming up UI…'},
-      {p: 12, text: 'Loading friendly rules…'},
-      {p: 35, text: 'Checking channel structure…'},
-      {p: 60, text: 'Applying wording polish…'},
-      {p: 82, text: 'Rendering animations…'},
-      {p: 98, text: 'Wrapping up…'}
-    ];
-    function stageFor(p){
-      for(let i=STAGES.length-1;i>=0;i--) if(p >= STAGES[i].p) return STAGES[i].text;
-      return STAGES[0].text;
+    // Translations (English and German)
+    const TRANSLATIONS = {
+      'en': {
+        dir: 'en',
+        loaderTitle: 'Preparing the server rules…',
+        loaderSubtitle: 'We polish the copy & animations. You’ll be able to read them shortly.',
+        stages: [
+          {p: 0, text: 'Warming up UI…'},
+          {p: 12, text: 'Loading friendly rules…'},
+          {p: 35, text: 'Checking channel structure…'},
+          {p: 60, text: 'Applying wording polish…'},
+          {p: 82, text: 'Rendering animations…'},
+          {p: 98, text: 'Wrapping up…'}
+        ],
+        skipLabel: 'Skip Loading',
+        disableLabel: 'Disable loader',
+        langEn: 'EN',
+        langDe: 'DE',
+        mainTitle: '📜 Server Rules',
+        mainSubtitle: 'Clear, fair, and made to keep the community fun.',
+        agree: 'Agree & Continue',
+        copied: 'Rules copied to clipboard',
+        thanks: 'Thanks — rules accepted!',
+        footerAccepted: '© 2026 • You have already accepted these rules. Thank you!'
+      },
+      'de-German': {
+        dir: 'de',
+        loaderTitle: 'Vorbereitung der Server-Regeln…',
+        loaderSubtitle: 'Wir überarbeiten Text & Animationen. Gleich kannst du sie lesen.',
+        stages: [
+          {p: 0, text: 'UI wird geladen…'},
+          {p: 12, text: 'Regeln werden geladen…'},
+          {p: 35, text: 'Kanalstruktur prüfen…'},
+          {p: 60, text: 'Wortwahl verbessern…'},
+          {p: 82, text: 'Animationen rendern…'},
+          {p: 98, text: 'Abschluss…'}
+        ],
+        skipLabel: 'Überspringen',
+        disableLabel: 'Ladebildschirm deaktivieren',
+        langEn: 'EN',
+        langDe: 'DE',
+        mainTitle: '📜 Server-Regeln',
+        mainSubtitle: 'Klar, fair und dafür da, die Community spaßig zu halten.',
+        agree: 'Akzeptieren & Weiter',
+        copied: 'Regeln in Zwischenablage kopiert',
+        thanks: 'Danke — Regeln akzeptiert!',
+        footerAccepted: '© 2026 • Du hast diese Regeln bereits akzeptiert. Danke!'
+      }
+    };
+
+    // Determine language: priority URL -> localStorage -> default en
+    let langKey = 'en';
+    if(requestedLang && TRANSLATIONS[requestedLang]) {
+      langKey = requestedLang;
+      localStorage.setItem(LANG_KEY, langKey);
+    } else if(localStorage.getItem(LANG_KEY)) {
+      const saved = localStorage.getItem(LANG_KEY);
+      if(TRANSLATIONS[saved]) langKey = saved;
+    } else if(navigator.language && navigator.language.startsWith('de')) {
+      // prefer German for de locales, but only if not overridden
+      langKey = 'de-German';
     }
 
-    const TOTAL_MS = 8000; 
+    function applyTranslations(){
+      const t = TRANSLATIONS[langKey] || TRANSLATIONS['en'];
+      document.documentElement.lang = t.dir === 'de' ? 'de' : 'en';
+      document.getElementById('loaderTitle').textContent = t.loaderTitle;
+      document.getElementById('loaderSubtitle').textContent = t.loaderSubtitle;
+      document.getElementById('skipBtn').textContent = t.skipLabel;
+      document.getElementById('disableBtn').textContent = t.disableLabel;
+      document.getElementById('langEn').textContent = t.langEn;
+      document.getElementById('langDe').textContent = t.langDe;
+      mainTitle.textContent = t.mainTitle;
+      mainSubtitle.textContent = t.mainSubtitle;
+      agreeBtn.textContent = t.agree;
+      copyToast.textContent = t.copied;
+      if(localStorage.getItem('serverRulesAccepted') === 'true'){
+        pageFooter.innerHTML = t.footerAccepted;
+      } else {
+        pageFooter.innerHTML = '© 2026 • ' + (t.dir === 'de' ? 'Drücke <strong>Akzeptieren & Weiter</strong>, um diese Regeln zu akzeptieren.' : 'Press <strong>Agree & Continue</strong> to accept these rules.');
+      }
+    }
+    applyTranslations();
+
+    // Update URL query param without reload (for shareable links)
+    function updateURLParam(k, v){
+      const u = new URL(location);
+      if(v === null) u.searchParams.delete(k);
+      else u.searchParams.set(k, v);
+      history.replaceState(null, '', u.toString());
+    }
+
+    // Language buttons
+    document.getElementById('langEn').addEventListener('click', ()=>{
+      langKey = 'en';
+      localStorage.setItem(LANG_KEY, langKey);
+      updateURLParam('languages', null);
+      applyTranslations();
+    });
+    document.getElementById('langDe').addEventListener('click', ()=>{
+      langKey = 'de-German';
+      localStorage.setItem(LANG_KEY, langKey);
+      updateURLParam('languages', 'de-German');
+      applyTranslations();
+    });
+
+    // If URL already asked for German, ensure UI reflects it immediately
+    if(requestedLang && requestedLang === 'de-German'){
+      langKey = 'de-German';
+      localStorage.setItem(LANG_KEY, langKey);
+      applyTranslations();
+    }
+
+    // smoother, faster loader configuration
+    const DEFAULT_MS = 2500; // faster than original 8000
+    const TOTAL_MS = DEFAULT_MS;
+
     let loaderStarted = null;
     let rafId = null;
 
@@ -318,7 +445,13 @@
       }catch(e){}
     })();
 
-    // stagger animation function
+    function stageFor(p){
+      const stages = TRANSLATIONS[langKey]?.stages || TRANSLATIONS['en'].stages;
+      for(let i=stages.length-1;i>=0;i--) if(p >= stages[i].p) return stages[i].text;
+      return stages[0].text;
+    }
+
+    // stagger reveal function (keeps current behavior, but faster when fast)
     function staggerReveal(list, delayStart, interval){
       list.forEach((el,i) => {
         if(!el.classList.contains('show')) {
@@ -327,17 +460,16 @@
       });
     }
 
-    // Handles the staggered reveal speed
     function revealAll(speed) {
-        const interval = speed === 'slow' ? 150 : 25;
-        let currentDelay = speed === 'slow' ? 200 : 50;
-        
+        const interval = speed === 'slow' ? 120 : 18;
+        let currentDelay = speed === 'slow' ? 180 : 30;
+
         staggerReveal(channelItems, currentDelay, interval);
         currentDelay += channelItems.length * interval;
-        
+
         staggerReveal(voiceItems, currentDelay, interval);
         currentDelay += voiceItems.length * interval;
-        
+
         staggerReveal(extraItems, currentDelay, interval);
     }
 
@@ -345,7 +477,8 @@
       if(!loaderStarted) loaderStarted = now;
       const elapsed = now - loaderStarted;
       const raw = Math.max(0, Math.min(1, elapsed / TOTAL_MS));
-      const pctDisplay = Math.min(100, Math.max(1, Math.ceil(raw * 100)));
+      // smooth percent (rounded)
+      const pctDisplay = Math.min(100, Math.max(1, Math.round(raw * 100)));
 
       progressInner.style.width = pctDisplay + '%';
       progressInner.textContent = pctDisplay + '%';
@@ -356,22 +489,22 @@
       try{ spinner.setAttribute('stroke-dashoffset', dash.toFixed(2)); }catch(e){}
 
       stageText.textContent = stageFor(pctDisplay);
-      const remaining = Math.max(0, (TOTAL_MS - elapsed) / 5000);
+      const remaining = Math.max(0, (TOTAL_MS - elapsed) / 1000);
       etaText.textContent = (pctDisplay >= 100) ? 'Ready' : `ETA: ${remaining.toFixed(1)}s`;
 
       // Finish loading
       if(pctDisplay >= 100){
         progressInner.style.width = '100%';
         progressInner.textContent = '100%';
-        progressBar.setAttribute('aria-valuenow', 1);
+        progressBar.setAttribute('aria-valuenow', 100);
         stageText.textContent = 'Ready';
         etaText.textContent = 'Ready';
-        
-        // Auto-dismiss and reveal slowly
+
+        // Auto-dismiss and reveal shortly
         setTimeout(()=> {
           hideLoader();
           revealAll('slow');
-        }, 260);
+        }, 200);
         cancelAnimationFrame(rafId);
         return;
       }
@@ -393,23 +526,34 @@
       progressInner.style.width = '100%'; progressInner.textContent = '100%';
       progressBar.setAttribute('aria-valuenow', 100);
       try{ spinner.setAttribute('stroke-dashoffset', 0); }catch(e){}
-      stageText.textContent = 'Skipped';
+      stageText.textContent = TRANSLATIONS[langKey]?.skipLabel || 'Skipped';
       etaText.textContent = 'Ready';
-      
+
       hideLoader();
       revealAll('fast');
+    });
+
+    // disable loader permanently
+    disableBtn.addEventListener('click', () => {
+      localStorage.setItem(SKIP_KEY, 'true');
+      // hide immediately
+      skipBtn.click();
+      // small feedback
+      disableBtn.textContent = TRANSLATIONS[langKey]?.disableLabel || 'Disabled';
+      disableBtn.disabled = true;
     });
 
     // Agree: accept & confetti
     agreeBtn.addEventListener('click', () => {
       if(agreeBtn.disabled) return;
-      agreeBtn.textContent = 'Accepted ✓';
+      const t = TRANSLATIONS[langKey] || TRANSLATIONS['en'];
+      agreeBtn.textContent = (t.thanks || 'Accepted ✓');
       agreeBtn.disabled = true;
       localStorage.setItem('serverRulesAccepted','true');
       try{ agreeBtn.animate([{transform:'scale(1)'},{transform:'scale(.96)'}], {duration:160, fill:'forwards'}); }catch(e){}
       spawnConfetti(90);
-      document.querySelector('footer').innerHTML = '© 2026 • You have already accepted these rules. Thank you!';
-      showToast('Thanks — rules accepted!');
+      pageFooter.innerHTML = t.footerAccepted || '© 2026 • You have already accepted these rules. Thank you!';
+      showToast(t.thanks || 'Thanks — rules accepted!');
     });
 
     // copy rules
@@ -424,20 +568,20 @@
         });
         out.push('');
       }
-      grab('Channel Rules','#channelList');
-      grab('Voice Rules','#voiceList');
-      grab('Extra Rules','#extraList');
+      grab(langKey === 'de-German' ? 'Kanalregeln' : 'Channel Rules','#channelList');
+      grab(langKey === 'de-German' ? 'Sprachregeln' : 'Voice Rules','#voiceList');
+      grab(langKey === 'de-German' ? 'Zusätzliche Regeln' : 'Extra Rules','#extraList');
       return out.join('\n');
     }
-    
+
     copyBtn.addEventListener('click', async ()=>{
       const txt = collectRulesText();
       try{
         await navigator.clipboard.writeText(txt);
-        showToast('Rules copied to clipboard');
+        showToast(TRANSLATIONS[langKey]?.copied || 'Rules copied to clipboard');
       }catch(e){
         const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
-        try{ document.execCommand('copy'); showToast('Rules copied to clipboard'); } catch(e2){ showToast('Copy failed'); }
+        try{ document.execCommand('copy'); showToast(TRANSLATIONS[langKey]?.copied || 'Rules copied to clipboard'); } catch(e2){ showToast('Copy failed'); }
         ta.remove();
       }
     });
@@ -450,30 +594,34 @@
 
     // If user already accepted, skip loader quickly and reveal fast
     try{
-      if(localStorage.getItem('serverRulesAccepted') === 'true'){
+      const skipLoaderFlag = localStorage.getItem(SKIP_KEY) === 'true';
+      if(localStorage.getItem('serverRulesAccepted') === 'true' || skipLoaderFlag || requestedLang === 'de-German') {
+        // if lang param present, show rules immediately (per your request)
         progressInner.style.width = '100%';
         progressInner.textContent = '100%';
         progressBar.setAttribute('aria-valuenow', 100);
         try{ spinner.setAttribute('stroke-dashoffset', 0); }catch(e){}
-        
+
         hideLoader();
         revealAll('fast');
 
-        // Update UI to reflect accepted status
-        agreeBtn.style.display = 'none';
-        document.querySelector('footer').innerHTML = '© 2026 • You have already accepted these rules. Thank you!';
+        // Update UI to reflect accepted status if applicable
+        if(localStorage.getItem('serverRulesAccepted') === 'true'){
+          agreeBtn.style.display = 'none';
+          pageFooter.innerHTML = TRANSLATIONS[langKey]?.footerAccepted || '© 2026 • You have already accepted these rules. Thank you!';
+        }
       } else {
         loaderStarted = null;
         rafId = requestAnimationFrame(stepFrame);
-        
-        // safety fallback
+
+        // safety fallback: ensure it won't hang longer than expected
         setTimeout(()=>{
           if(progressInner.textContent !== '100%'){
             cancelAnimationFrame(rafId);
             progressInner.style.width = '100%'; progressInner.textContent = '100%';
             progressBar.setAttribute('aria-valuenow', 100);
             try{ spinner.setAttribute('stroke-dashoffset', 0); }catch(e){}
-            
+
             hideLoader();
             revealAll('fast');
           }
